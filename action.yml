@@ -1,0 +1,17 @@
+name: 'Get Project Info'
+description: 'Ask Build with ionos API to retrieve project info'
+inputs:
+  api-key:
+    description: 'The api key to access build with ionos'
+    required: true
+  project:
+    description: 'The project to deploy with build with ionos'
+    required: true
+outputs:
+  site-url:
+    description: 'The site url of the webspace'
+  remote-host:
+    description: 'The ssh url of the webspace'
+runs:
+  using: 'node12'
+  main: 'index.js'
