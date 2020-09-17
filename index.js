@@ -555,87 +555,19 @@ module.exports = require("os");
 /***/ 104:
 /***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
 
-const https = __webpack_require__(211);
 const core = __webpack_require__(470);
 const github = __webpack_require__(469);
 const axios = __webpack_require__(53)
-
-var cert = "-----BEGIN CERTIFICATE-----\n" +
-    "MIIEpTCCA42gAwIBAgIBADANBgkqhkiG9w0BAQsFADBcMRowGAYDVQQKDBExdW5k\n" +
-    "MSBJbnRlcm5ldCBBRzEfMB0GA1UECwwWcHVraS1hZG1pbiBhdCAxdW5kMS5kZTEd\n" +
-    "MBsGA1UEAwwUMXVuZDEgUFVLSSBSb290IENBIDEwHhcNMTUwMjE5MTQ0MDUxWhcN\n" +
-    "MjUwMjE2MTQ0MDUxWjBcMRowGAYDVQQKDBExdW5kMSBJbnRlcm5ldCBBRzEfMB0G\n" +
-    "A1UECwwWcHVraS1hZG1pbiBhdCAxdW5kMS5kZTEdMBsGA1UEAwwUMXVuZDEgUFVL\n" +
-    "SSBSb290IENBIDEwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCtMMSk\n" +
-    "8P3pfQfuOzdIUJmsO4/pbfxYs6KnOq4RKPYKk5ui77AYYu+yRDW1YIQzG0HGL9aH\n" +
-    "ulxUEYdIw/UrlzdnJ+YBHX5FY3wMdWpPRxAG3nJHMuFD3hrjY4xQD00lnO9z4ugD\n" +
-    "fWSjqIpJKEa3Bb34YPllRcb8ahYol/T96b0NujL0QU233mPLlOUn6Z/5GB+xsrgT\n" +
-    "6lBVYaJv2R9CZOcC1La5lph9K7vAGA6ILMntKXnbxzGlO5+EF8eQKmF5TT+XqqL7\n" +
-    "Mi0qQPZ/7Dl0lWwpwP8uFPySTjCimX3RNAytD6q9shTGIIAq58DNeO9QjknDMHZ6\n" +
-    "Zk04biqYqlxBDZ5xAgMBAAGjggFwMIIBbDAPBgNVHRMECDAGAQH/AgEBMB0GA1Ud\n" +
-    "DgQWBBRlpx5zuSM1OnEf6MWvInrkLmzpfDAfBgNVHSMEGDAWgBRlpx5zuSM1OnEf\n" +
-    "6MWvInrkLmzpfDALBgNVHQ8EBAMCAQYwgcEGA1UdIASBuTCBtjCBswYLKwYBBAGC\n" +
-    "3HkBAQEwgaMwOQYIKwYBBQUHAgEWLWh0dHA6Ly9wdWIucGtpLjFhbmQxLm9yZy9w\n" +
-    "dWIvcHVraXJvb3RjYTEuaHRtbDBmBggrBgEFBQcCAjBaGlhUaGlzIFJvb3QgQ0Eg\n" +
-    "c29sZWx5IGlzc3VlcyBzdWJvcmRpbmF0ZSBDQSBjZXJ0aWZpY2F0ZXMsIGJ1dCBu\n" +
-    "b3QgZW5kIGVudGl0eSBjZXJ0aWZpY2F0ZXMuMEgGCCsGAQUFBwEBBDwwOjA4Bggr\n" +
-    "BgEFBQcwAoYsaHR0cDovL3B1Yi5wa2kuMWFuZDEub3JnL3B1Yi9wdWtpcm9vdGNh\n" +
-    "MS5jZXIwDQYJKoZIhvcNAQELBQADggEBAEB362P96KSuKg3dSuuANQCatUmCXkKE\n" +
-    "zxQu09ALoo6hx0BojmX8BAiSmDgOyhOsKseGlRKcodu9NYGU0dNqwCNAKBPI2L3z\n" +
-    "ul7dGt+hYep+hBr03Y3BwQH6iOgfTlvElLUcGkkpAa5HLBMfanvja63m1SLHGhwk\n" +
-    "WGTYJkvXuMrsB7JTkaJGmGuq0qb0wnOQj9nplFUbppXEPpAvWOOHXca1ZmgdR/6G\n" +
-    "1L/tjfWkx1NEpmGk+Hca+Hf4KAj5BUkmsWRBbFR4INikTb6WTxlmkc49CTNx2VUR\n" +
-    "IsQyHazIX7epyV5YmIYMb4k3RcLZ7nA0r/soaSkFv/h/Ya4Tf1zNfzE=\n" +
-    "-----END CERTIFICATE-----\n" +
-    "-----BEGIN CERTIFICATE-----\n" +
-    "MIICiTCCAg+gAwIBAgIQH0evqmIAcFBUTAGem2OZKjAKBggqhkjOPQQDAzCBhTEL\n" +
-    "MAkGA1UEBhMCR0IxGzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UE\n" +
-    "BxMHU2FsZm9yZDEaMBgGA1UEChMRQ09NT0RPIENBIExpbWl0ZWQxKzApBgNVBAMT\n" +
-    "IkNPTU9ETyBFQ0MgQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkwHhcNMDgwMzA2MDAw\n" +
-    "MDAwWhcNMzgwMTE4MjM1OTU5WjCBhTELMAkGA1UEBhMCR0IxGzAZBgNVBAgTEkdy\n" +
-    "ZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEaMBgGA1UEChMRQ09N\n" +
-    "T0RPIENBIExpbWl0ZWQxKzApBgNVBAMTIkNPTU9ETyBFQ0MgQ2VydGlmaWNhdGlv\n" +
-    "biBBdXRob3JpdHkwdjAQBgcqhkjOPQIBBgUrgQQAIgNiAAQDR3svdcmCFYX7deSR\n" +
-    "FtSrYpn1PlILBs5BAH+X4QokPB0BBO490o0JlwzgdeT6+3eKKvUDYEs2ixYjFq0J\n" +
-    "cfRK9ChQtP6IHG4/bC8vCVlbpVsLM5niwz2J+Wos77LTBumjQjBAMB0GA1UdDgQW\n" +
-    "BBR1cacZSBm8nZ3qQUfflMRId5nTeTAOBgNVHQ8BAf8EBAMCAQYwDwYDVR0TAQH/\n" +
-    "BAUwAwEB/zAKBggqhkjOPQQDAwNoADBlAjEA7wNbeqy3eApyt4jf/7VGFAkK+qDm\n" +
-    "fQjGGoe9GKhzvSbKYAydzpmfz1wPMOG+FDHqAjAU9JM8SaczepBGR7NjfRObTrdv\n" +
-    "GDeAU/7dIOA1mjbRxwG55tzd8/8dLDoWV9mSOdY=\n" +
-    "-----END CERTIFICATE-----\n" +
-    "-----BEGIN CERTIFICATE-----\n" +
-    "MIIDdzCCAl+gAwIBAgIEAgAAuTANBgkqhkiG9w0BAQUFADBaMQswCQYDVQQGEwJJ\n" +
-    "RTESMBAGA1UEChMJQmFsdGltb3JlMRMwEQYDVQQLEwpDeWJlclRydXN0MSIwIAYD\n" +
-    "VQQDExlCYWx0aW1vcmUgQ3liZXJUcnVzdCBSb290MB4XDTAwMDUxMjE4NDYwMFoX\n" +
-    "DTI1MDUxMjIzNTkwMFowWjELMAkGA1UEBhMCSUUxEjAQBgNVBAoTCUJhbHRpbW9y\n" +
-    "ZTETMBEGA1UECxMKQ3liZXJUcnVzdDEiMCAGA1UEAxMZQmFsdGltb3JlIEN5YmVy\n" +
-    "VHJ1c3QgUm9vdDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKMEuyKr\n" +
-    "mD1X6CZymrV51Cni4eiVgLGw41uOKymaZN+hXe2wCQVt2yguzmKiYv60iNoS6zjr\n" +
-    "IZ3AQSsBUnuId9Mcj8e6uYi1agnnc+gRQKfRzMpijS3ljwumUNKoUMMo6vWrJYeK\n" +
-    "mpYcqWe4PwzV9/lSEy/CG9VwcPCPwBLKBsua4dnKM3p31vjsufFoREJIE9LAwqSu\n" +
-    "XmD+tqYF/LTdB1kC1FkYmGP1pWPgkAx9XbIGevOF6uvUA65ehD5f/xXtabz5OTZy\n" +
-    "dc93Uk3zyZAsuT3lySNTPx8kmCFcB5kpvcY67Oduhjprl3RjM71oGDHweI12v/ye\n" +
-    "jl0qhqdNkNwnGjkCAwEAAaNFMEMwHQYDVR0OBBYEFOWdWTCCR1jMrPoIVDaGezq1\n" +
-    "BE3wMBIGA1UdEwEB/wQIMAYBAf8CAQMwDgYDVR0PAQH/BAQDAgEGMA0GCSqGSIb3\n" +
-    "DQEBBQUAA4IBAQCFDF2O5G9RaEIFoN27TyclhAO992T9Ldcw46QQF+vaKSm2eT92\n" +
-    "9hkTI7gQCvlYpNRhcL0EYWoSihfVCr3FvDB81ukMJY2GQE/szKN+OMY3EU/t3Wgx\n" +
-    "jkzSswF07r51XgdIGn9w/xZchMB5hbgF/X++ZRGjD8ACtPhSNzkE1akxehi/oCr0\n" +
-    "Epn3o0WC4zxe9Z2etciefC7IpJ5OCBRLbf1wbWsaY71k5h+3zvDyny67G7fyUIhz\n" +
-    "ksLi4xaNmjICq44Y3ekQEe5+NauQrz4wlHrQMz2nZQ/1/I6eYs9HRCwBXbsdtTLS\n" +
-    "R9I4LtD+gdwyah617jzV/OeBHRnDJELqYzmp\n" +
-    "-----END CERTIFICATE-----\n"
 
 try {
     const apiKey = core.getInput('api-key',{});
     const project = core.getInput('project',{});
     const branch = github.context.payload.ref.replace(/refs\/heads/g, '');
-    const httpsAgent = new https.Agent({ca: Buffer.from(cert, 'utf8')});
 
     const instance = axios.create({
         baseURL: `https://api.buildwith.ionos.com`,
         timeout: 1000,
-        headers: {'Authorization': `API-Key ${apiKey}`},
-        httpsAgent: httpsAgent
+        headers: {'Authorization': `API-Key ${apiKey}`}
     });
 
     instance.get(`/v1/projects/${project}/git-repository/branches/${branch}`).then(res => {
