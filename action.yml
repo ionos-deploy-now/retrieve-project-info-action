@@ -1,6 +1,9 @@
 name: 'Get Project Info'
 description: 'Ask Build with ionos API to retrieve project info'
 inputs:
+  service-host:
+    description: 'The service endpoint to call in the action'
+    required: true
   api-key:
     description: 'The api key to access build with ionos'
     required: true
