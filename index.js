@@ -635,10 +635,14 @@ try {
     });
 
     instance.get(`/v1/projects/${project}/branches/${branch}`).then(res => {
-        console.log(`site-url: ${res.data.webSpace.siteUrl}`)
-        core.setOutput("site-url", res.data.webSpace.siteUrl);
-        console.log(`remote-host: ${res.data.webSpace.sshHost}`)
-        core.setOutput("remote-host", res.data.webSpace.sshHost);
+        if (res.data.deploymentEnabled) {
+            console.log(`site-url: ${res.data.webSpace.siteUrl}`)
+            core.setOutput("site-url", res.data.webSpace.siteUrl);
+            console.log(`remote-host: ${res.data.webSpace.sshHost}`)
+            core.setOutput("remote-host", res.data.webSpace.sshHost);
+        } else {
+            core.setFailed('The deployment is disabled for this branch')
+        }
     }).catch(err => {
         core.setFailed(err);
     });
