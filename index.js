@@ -627,7 +627,7 @@ try {
     const serviceHost = core.getInput('service-host',{});
     const apiKey = core.getInput('api-key',{});
     const project = core.getInput('project',{});
-    const branch = utf8.encode(github.context.payload.ref.replace(/refs\/heads\//g, '').replace(/\//g, '%2F'));
+    const branchName = utf8.encode(github.context.payload.ref.replace(/refs\/heads\//g, ''));
 
     const instance = axios.create({
         baseURL: `https://${serviceHost}`,
@@ -635,15 +635,30 @@ try {
         headers: {'Authorization': `API-Key ${apiKey}`},
     });
 
-    instance.get(`/v1/projects/${project}/branches/${branch}`).then(res => {
-        if (res.data.deploymentEnabled) {
-            console.log(`site-url: ${res.data.webSpace.siteUrl}`)
-            core.setOutput("site-url", res.data.webSpace.siteUrl);
-            console.log(`remote-host: ${res.data.webSpace.sshHost}`)
-            core.setOutput("remote-host", res.data.webSpace.sshHost);
-        } else {
-            core.setFailed('The deployment is disabled for this branch')
+    instance.get(`/v1/projects/${project}/branches`, { params: { name: branchName } }).then(res => {
+        if (res.data.total === 0) {
+            core.setFailed(`Branch ${branchName} not found in IONOS.space`);
+            return;
         }
+
+        const branches = res.data.values.filter(branch => branch.name === branchName);
+        if (branches.length === 0) {
+            core.setFailed(`Branch ${branchName} not found in IONOS.space`);
+            return;
+        }
+
+        const branch = branches[0];
+        if (!branch.deploymentEnabled) {
+            core.setFailed('The deployment is disabled for this branch');
+            return;
+        }
+
+        console.log(`site-url: ${branch.webSpace.siteUrl}`)
+        core.setOutput("site-url", branch.webSpace.siteUrl);
+        console.log(`remote-host: ${branch.webSpace.sshHost}`)
+        core.setOutput("remote-host", branch.webSpace.sshHost);
+        console.log(`branch-id: ${branch.id}`)
+        core.setOutput("branch-id", branch.id);
     }).catch(err => {
         core.setFailed(err);
     });
