@@ -662,6 +662,8 @@ try {
         core.setOutput("remote-host", branch.webSpace.sshHost);
         console.log(`branch-id: ${branch.id}`)
         core.setOutput("branch-id", branch.id);
+        console.log(`storage-quota: ${branch.webSpaceQuota.storageQuota}`)
+        core.setOutput("storage-quota", branch.webSpaceQuota.storageQuota);
     }).catch(err => {
         core.setFailed(err);
     });

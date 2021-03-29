@@ -17,6 +17,8 @@ outputs:
     description: 'The ssh url of the webspace'
   branch-id:
     description: 'The IONOS.space branch id'
+  storage-quota:
+    description: 'The allowed quota for the storage'
 runs:
   using: 'node12'
   main: 'index.js'
