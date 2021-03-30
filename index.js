@@ -625,9 +625,9 @@ const axiosRetry = __webpack_require__(346);
 const utf8 = __webpack_require__(530);
 
 try {
-    const serviceHost = core.getInput('service-host',{});
-    const apiKey = core.getInput('api-key',{});
-    const project = core.getInput('project',{});
+    const serviceHost = core.getInput('service-host', {});
+    const apiKey = core.getInput('api-key', {});
+    const project = core.getInput('project', {});
     const branchName = utf8.encode(github.context.payload.ref.replace(/refs\/heads\//g, ''));
 
     axiosRetry(axios, { retries: 3 });
@@ -635,38 +635,64 @@ try {
     const instance = axios.create({
         baseURL: `https://${serviceHost}`,
         timeout: 5000,
-        headers: {'Authorization': `API-Key ${apiKey}`},
+        headers: { 'Authorization': `API-Key ${apiKey}` },
     });
 
-    instance.get(`/v1/projects/${project}/branches`, { params: { name: branchName } }).then(res => {
-        if (res.data.total === 0) {
-            core.setFailed(`Branch ${branchName} not found in IONOS.space`);
-            return;
+    const retries = 5;
+
+    function retry(handler, counter) {
+        const secondsToWait = Math.pow(2, retries - counter);
+        console.log(`Project information not found. Retry in ${secondsToWait} seconds.`);
+        setTimeout(handler, secondsToWait * 1000);
+    }
+
+    function retrieveProjectInfo(counter) {
+        if (counter === 0) {
+            core.setFailed("Failed to retrieve project information");
         }
 
-        const branches = res.data.values.filter(branch => branch.name === branchName);
-        if (branches.length === 0) {
-            core.setFailed(`Branch ${branchName} not found in IONOS.space`);
-            return;
-        }
+        instance.get(`/v1/projects/${project}/branches`, { params: { name: branchName } })
+                .then(res => {
+                    const branches = res.data.values.filter(branch => branch.name === branchName);
+                    if (branches.length === 0) {
+                        if (counter === 0) {
+                            core.setFailed(`Branch ${branchName} not found in IONOS.space`);
+                        } else {
+                            retry(function () { retrieveProjectInfo(counter - 1)}, counter);
+                        }
+                        return;
+                    }
 
-        const branch = branches[0];
-        if (!branch.deploymentEnabled) {
-            core.setFailed('The deployment is disabled for this branch');
-            return;
-        }
+                    const branch = branches[0];
+                    if (!branch.deploymentEnabled) {
+                        core.setFailed('The deployment is disabled for this branch');
+                        return;
+                    }
 
-        console.log(`site-url: ${branch.webSpace.siteUrl}`)
-        core.setOutput("site-url", branch.webSpace.siteUrl);
-        console.log(`remote-host: ${branch.webSpace.sshHost}`)
-        core.setOutput("remote-host", branch.webSpace.sshHost);
-        console.log(`branch-id: ${branch.id}`)
-        core.setOutput("branch-id", branch.id);
-        console.log(`storage-quota: ${branch.webSpaceQuota.storageQuota}`)
-        core.setOutput("storage-quota", branch.webSpaceQuota.storageQuota);
-    }).catch(err => {
-        core.setFailed(err);
-    });
+                    if (branch.webSpaceQuota === undefined) {
+                        if (counter === 0) {
+                            core.setFailed('The IONOS.space project is not yet setup properly');
+                        } else {
+                            retry(function () { retrieveProjectInfo(counter - 1)}, counter);
+                        }
+                        return;
+                    }
+
+                    console.log(`site-url: ${branch.webSpace.siteUrl}`)
+                    core.setOutput("site-url", branch.webSpace.siteUrl);
+                    console.log(`remote-host: ${branch.webSpace.sshHost}`)
+                    core.setOutput("remote-host", branch.webSpace.sshHost);
+                    console.log(`branch-id: ${branch.id}`)
+                    core.setOutput("branch-id", branch.id);
+                    console.log(`storage-quota: ${branch.webSpaceQuota.storageQuota}`)
+                    core.setOutput("storage-quota", branch.webSpaceQuota.storageQuota);
+                })
+                .catch(err => {
+                    core.setFailed(err);
+                });
+    }
+
+    retrieveProjectInfo(retries);
 } catch
     (error) {
     core.setFailed(error.message);
