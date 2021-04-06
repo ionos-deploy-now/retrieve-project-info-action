@@ -1,3 +1,3 @@
-Retrieve information of a build-with-IONOS project.
+Retrieve information of a IONOS Deploy Now project.
 
-*Note: this is still a work in progress*
+Do not use this action on your own. [IONOS Deploy Now](ionos.space) will setup this for you.
