@@ -668,7 +668,7 @@ try {
                         return;
                     }
 
-                    if (branch.webSpaceQuota === null) {
+                    if (branch.webSpaceQuota === null || branch.webSpaceQuota === undefined) {
                         if (counter === 0) {
                             core.setFailed('The IONOS.space project is not yet setup properly');
                         } else {
