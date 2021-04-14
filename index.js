@@ -664,7 +664,7 @@ try {
 
                     const branch = branches[0];
                     if (!branch.deploymentEnabled) {
-                        core.setFailed('The deployment is disabled for this branch');
+                        core.warning('The deployment is disabled for this branch');
                         return;
                     }
 
