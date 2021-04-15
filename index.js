@@ -665,6 +665,7 @@ try {
                     const branch = branches[0];
                     if (!branch.deploymentEnabled) {
                         core.warning('The deployment is disabled for this branch');
+                        core.setOutput("deployment-enabled", false);
                         return;
                     }
 
@@ -685,6 +686,8 @@ try {
                     core.setOutput("branch-id", branch.id);
                     console.log(`storage-quota: ${branch.webSpaceQuota.storageQuota}`)
                     core.setOutput("storage-quota", branch.webSpaceQuota.storageQuota);
+                    console.log(`deployment-enabled: true`)
+                    core.setOutput("deployment-enabled", true);
                 })
                 .catch(err => {
                     core.setFailed(err);
