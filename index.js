@@ -646,10 +646,6 @@ try {
     }
 
     function retrieveProjectInfo(counter) {
-        if (counter === 0) {
-            core.setFailed("Failed to retrieve project information");
-        }
-
         instance.get(`/v1/projects/${project}/branches`, { params: { name: branchName } })
                 .then(res => {
                     const branches = res.data.values.filter(branch => branch.name === branchName);
