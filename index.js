@@ -646,9 +646,25 @@ try {
     }
 
     function retrieveProjectInfo(counter) {
-        instance.get(`/v1/projects/${project}/branches`, { params: { name: branchName } })
+        instance.get(`/v1/projects/${project}`)
                 .then(res => {
-                    const branches = res.data.values.filter(branch => branch.name === branchName);
+                    const project = res.data;
+                    if (project.productionBranch.name === branchName) {
+                        const branch = project.productionBranch;
+                        console.log(`site-url: https://${project.domain}`)
+                        core.setOutput("site-url", `https://${project.domain}`);
+                        console.log(`remote-host: ${branch.webSpace.sshHost}`)
+                        core.setOutput("remote-host", branch.webSpace.sshHost);
+                        console.log(`branch-id: ${branch.id}`)
+                        core.setOutput("branch-id", branch.id);
+                        console.log(`storage-quota: ${branch.webSpaceQuota.storageQuota}`)
+                        core.setOutput("storage-quota", branch.webSpaceQuota.storageQuota);
+                        console.log(`deployment-enabled: true`)
+                        core.setOutput("deployment-enabled", true);
+                        return;
+                    }
+
+                    const branches = project.branches.filter(branch => branch.name === branchName);
                     if (branches.length === 0) {
                         if (counter === 0) {
                             core.setFailed(`Branch ${branchName} not found in IONOS.space`);
