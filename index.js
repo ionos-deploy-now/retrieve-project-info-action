@@ -651,6 +651,16 @@ try {
                     const project = res.data;
                     if (project.productionBranch.name === branchName) {
                         const branch = project.productionBranch;
+
+                        if (branch.webSpaceQuota === null || branch.webSpaceQuota === undefined) {
+                            if (counter === 0) {
+                                core.setFailed('The IONOS.space project is not yet setup properly');
+                            } else {
+                                retry(function () { retrieveProjectInfo(counter - 1)}, counter);
+                            }
+                            return;
+                        }
+
                         console.log(`site-url: https://${project.domain}`)
                         core.setOutput("site-url", `https://${project.domain}`);
                         console.log(`remote-host: ${branch.webSpace.sshHost}`)
