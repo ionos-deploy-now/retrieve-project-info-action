@@ -671,6 +671,8 @@ try {
                         core.setOutput("storage-quota", branch.webSpaceQuota.storageQuota);
                         console.log(`deployment-enabled: true`)
                         core.setOutput("deployment-enabled", true);
+                        console.log(`bootstrap-deploy: ${branch.webSpace.lastDeploymentDate == null}`)
+                        core.setOutput("bootstrap-deploy", branch.webSpace.lastDeploymentDate == null);
                         return;
                     }
 
@@ -710,6 +712,8 @@ try {
                     core.setOutput("storage-quota", branch.webSpaceQuota.storageQuota);
                     console.log(`deployment-enabled: true`)
                     core.setOutput("deployment-enabled", true);
+                    console.log(`bootstrap-deploy: ${branch.webSpace.lastDeploymentDate == null}`)
+                    core.setOutput("bootstrap-deploy", branch.webSpace.lastDeploymentDate == null);
                 })
                 .catch(err => {
                     core.setFailed(err);

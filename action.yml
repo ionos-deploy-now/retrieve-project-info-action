@@ -21,6 +21,8 @@ outputs:
     description: 'The allowed quota for the storage'
   deployment-enabled:
     description: 'Is the deployement enabled for this branch'
+  bootstrap-deploy:
+    description: "true if it's the first deployment"
 runs:
   using: 'node12'
   main: 'index.js'
