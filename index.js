@@ -627,7 +627,7 @@ try {
     const serviceHost = core.getInput('service-host', {});
     const apiKey = core.getInput('api-key', {});
     const project = core.getInput('project', {});
-    const branchName = github.context.payload.ref.replace(/refs\/heads\//g, '');
+    const branchName = github.context.ref.replace(/refs\/heads\//g, '');
 
     axiosRetry(axios, { retries: 3 });
 
