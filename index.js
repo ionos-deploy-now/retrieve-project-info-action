@@ -633,7 +633,7 @@ try {
 
     const instance = axios.create({
         baseURL: `https://${serviceHost}`,
-        timeout: 5000,
+        timeout: 10000,
         headers: { 'Authorization': `API-Key ${apiKey}` },
     });
 
