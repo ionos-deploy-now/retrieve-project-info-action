@@ -646,7 +646,7 @@ try {
     }
 
     function retrieveProjectInfo(counter) {
-        instance.get(`/v1/projects/${project}`)
+        instance.get(`/v2/projects/${project}`)
                 .then(res => {
                     const project = res.data;
                     if (project.productionBranch.name === branchName) {
