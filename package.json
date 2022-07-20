@@ -1,0 +1,19 @@
+{
+  "name": "retrieve-project-info-action",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "tsc",
+    "release": "ncc build src/action/index.ts"
+  },
+  "dependencies": {
+    "@actions/core": "1.9.0",
+    "@actions/github": "5.0.3",
+    "axios": "^0.21.1",
+    "axios-retry": "^3.1.9"
+  },
+  "devDependencies": {
+    "typescript": "4.7.4",
+    "@vercel/ncc": "0.34.0",
+    "@types/node": "18.0.6"
+  }
+}
