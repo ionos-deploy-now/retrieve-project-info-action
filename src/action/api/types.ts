@@ -1,23 +1,23 @@
-type Project = {
-    id: string
-    domain: string
-    productionBranch: BranchOverview
-}
+export type Project = {
+  id: string;
+  domain: string;
+  productionBranch: BranchOverview;
+};
 
-type BranchOverview = {
-    id: string
-    name: string
-}
+export type BranchOverview = {
+  id: string;
+  name: string;
+};
 
-type Branch = {
-    id: string
-    name: string
-    lastDeploymentDate: string | undefined
-    webSpace: { state: string, webSpace: WebSpace } | undefined
-}
+export type Branch = {
+  id: string;
+  name: string;
+  lastDeploymentDate: string | undefined;
+  webSpace: { state: string; webSpace: WebSpace } | undefined;
+};
 
-type WebSpace = {
-    siteUrl: string
-    sshHost: string
-    quota: { storageQuota: string }
-}
+export type WebSpace = {
+  siteUrl: string;
+  sshHost: string;
+  quota: { storageQuota: string };
+};
