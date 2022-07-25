@@ -27,7 +27,7 @@ export default class DeployNowApi {
           const branches = res.data.values.filter((branch) => branch.name === branchName);
           if (branches.length === 0) {
             if (lastRetry) {
-              throw new Error(`Branch ${branchName} not found in IONOS.space`);
+              throw new Error(`Branch ${branchName} not found in DeployNow`);
             } else {
               return retry();
             }
@@ -45,7 +45,7 @@ export default class DeployNowApi {
           const branch = res.data as Branch;
           if (branch.webSpace === null || branch.webSpace === undefined || branch.webSpace.state !== 'CREATED') {
             if (lastRetry) {
-              throw new Error('The IONOS.space project is not yet setup properly');
+              throw new Error('The setup of this DeployNow project is not fully completed yet');
             } else {
               return retry();
             }

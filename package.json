@@ -3,12 +3,14 @@
   "version": "1.0.0",
   "scripts": {
     "lint": "eslint src --max-warnings=0 --ext .ts",
+    "test": "mocha --require ts-node/register src/test/*.ts",
     "build": "tsc",
     "release": "ncc build src/action/index.ts"
   },
   "dependencies": {
     "@actions/core": "1.9.0",
     "@actions/github": "5.0.3",
+    "@ionos-deploy-now/actions-core": "^1.0.0",
     "axios": "^0.21.1",
     "axios-retry": "^3.1.9"
   },
@@ -17,6 +19,17 @@
     "@vercel/ncc": "0.34.0",
     "@types/node": "18.0.6",
     "@ionos-deploy-now/eslint-config-actions": "1.0.0",
-    "@ionos-deploy-now/prettier-config-actions": "1.0.0"
+    "@ionos-deploy-now/prettier-config-actions": "1.0.0",
+    "mocha": "^10.0.0",
+    "@types/mocha": "^9.1.1",
+    "chai": "^4.3.6",
+    "@types/chai": "^4.3.1",
+    "chai-as-promised": "^7.1.1",
+    "@types/chai-as-promised": "^7.1.5",
+    "ts-node": "^10.9.1",
+    "sinon": "^14.0.0",
+    "ts-sinon": "^2.0.2",
+    "@types/sinon": "^10.0.13",
+    "uuid": "^8.3.2"
   }
 }
