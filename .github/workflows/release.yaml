@@ -1,0 +1,72 @@
+name: Build release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version of release'
+        type: string
+        required: true
+      update-major-tag:
+        description: 'Update major release tag to current release'
+        type: boolean
+        required: true
+        default: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          registry-url: 'https://npm.pkg.github.com'
+      - name: Setup project
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npm ci
+      - name: Test and build code
+        run: |
+          npm run lint
+          npm run test
+          npm run build
+      - name: Build release
+        run: |
+          npm version ${{ inputs.version }}
+          npm run release
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        id: commit-step
+        with:
+          commit_message: Release version v${{ inputs.version }}
+          tagging_message: v${{ inputs.version }}
+      - if: inputs.update-major-tag
+        name: Update major version tag
+        uses: actions/github-script@v3
+        env:
+          VERSION: ${{ inputs.version }}
+          SHA: ${{ steps.commit-step.outputs.commit_hash }}
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const { VERSION, SHA } = process.env
+            const tag = "v" + VERSION.split(".")[0]
+            if (tag === "v") {
+              return
+            }
+            try {
+                await github.git.deleteRef({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: "tags/" + tag
+                })
+            } catch (e) {
+              console.log("The tag " + tag + " doesn't exist yet.")
+            }
+            await github.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: "refs/tags/" + tag,
+              sha: SHA
+            })              

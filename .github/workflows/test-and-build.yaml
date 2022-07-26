@@ -1,0 +1,23 @@
+name: Test and build action
+
+on: push
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          registry-url: 'https://npm.pkg.github.com'
+      - name: Setup project
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npm ci
+      - name: Test and build code
+        run: |
+          npm run lint
+          npm run test
+          npm run build
