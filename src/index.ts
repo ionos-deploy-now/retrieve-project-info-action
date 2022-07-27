@@ -1,6 +1,6 @@
-import { retrieveProjectInfo } from './action';
-import { ProjectInfo } from './action/output/types';
-import Configuration from './action/input/types';
+import { retrieveProjectInfo } from './main';
+import { ProjectInfo } from './main/action/output/types';
+import Configuration from './main/action/input/types';
 import Action from '@ionos-deploy-now/actions-core';
 
 Action.run<Configuration, ProjectInfo>(

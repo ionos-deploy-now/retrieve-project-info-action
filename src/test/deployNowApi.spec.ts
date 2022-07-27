@@ -5,8 +5,8 @@ import * as sinon from 'sinon';
 import * as tsSinon from 'ts-sinon';
 import * as uuid from 'uuid';
 import axios, { AxiosInstance } from 'axios';
-import DeployNowApi from '../action/api/deployNow';
-import { Branch, BranchOverview, Project } from '../action/api/types';
+import DeployNowApi from '../main/action/api/deployNow';
+import { Branch, BranchOverview, Project } from '../main/action/api/types';
 
 describe('Test deployNow api interaction', () => {
   before(() => {

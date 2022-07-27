@@ -1,6 +1,6 @@
-import DeployNowApi from './api/deployNow';
-import Types from './input/types';
-import { ProjectInfo } from './output/types';
+import DeployNowApi from './action/api/deployNow';
+import Types from './action/input/types';
+import { ProjectInfo } from './action/output/types';
 
 export async function retrieveProjectInfo(configuration: Types): Promise<ProjectInfo> {
   const deployNowApi = new DeployNowApi(configuration.serviceHost, configuration.apiKey);

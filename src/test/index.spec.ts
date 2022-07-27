@@ -2,9 +2,9 @@ import { expect } from 'chai';
 import { afterEach, describe } from 'mocha';
 import * as sinon from 'sinon';
 import * as uuid from 'uuid';
-import DeployNowApi from '../action/api/deployNow';
-import { retrieveProjectInfo } from '../action';
-import { Branch, BranchOverview, Project } from '../action/api/types';
+import DeployNowApi from '../main/action/api/deployNow';
+import { retrieveProjectInfo } from '../main';
+import { Branch, BranchOverview, Project } from '../main/action/api/types';
 
 describe('Test main action function', () => {
   afterEach(() => {
