@@ -6,3 +6,7 @@ export type ProjectInfo = {
   'storage-quota': string;
   'bootstrap-deploy': boolean;
 };
+
+export type DisabledProject = {
+  'deployment-enabled': boolean;
+};

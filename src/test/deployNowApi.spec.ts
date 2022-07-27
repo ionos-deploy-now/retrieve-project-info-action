@@ -33,6 +33,7 @@ describe('Test deployNow api interaction', () => {
       productionBranch: {
         id: branchId,
         name: 'main',
+        deploymentEnabled: true,
       },
     };
 
@@ -54,6 +55,7 @@ describe('Test deployNow api interaction', () => {
     const expected = {
       id: branchId,
       name: branchName,
+      deploymentEnabled: true,
     };
 
     expect(result).to.deep.equal(expected);
@@ -79,6 +81,7 @@ describe('Test deployNow api interaction', () => {
     const expected = {
       id: branchId,
       name: branchName,
+      deploymentEnabled: true,
     };
 
     expect(result).to.deep.equal(expected);
@@ -115,8 +118,9 @@ describe('Test deployNow api interaction', () => {
     const result = await new DeployNowApi('', '').getBranch(projectId, branchId);
     const expected = {
       id: branchId,
-      lastDeploymentDate: 'now',
       name: branchName,
+      deploymentEnabled: true,
+      lastDeploymentDate: 'now',
       webSpace: {
         state: 'CREATED',
         webSpace: {
@@ -151,8 +155,9 @@ describe('Test deployNow api interaction', () => {
     const result = await new DeployNowApi('', '').getBranch(projectId, branchId);
     const expected = {
       id: branchId,
-      lastDeploymentDate: 'now',
       name: branchName,
+      deploymentEnabled: true,
+      lastDeploymentDate: 'now',
       webSpace: {
         state: 'CREATED',
         webSpace: {
@@ -196,6 +201,7 @@ function project(id: string, branchId): Promise<{ data: Project }> {
         productionBranch: {
           id: branchId,
           name: 'main',
+          deploymentEnabled: true,
         },
       },
     })
@@ -208,7 +214,7 @@ function emptyBranchOverview(): Promise<{ data: { values: BranchOverview[] } }> 
 
 function branchOverview(id: string, name: string): Promise<{ data: { values: BranchOverview[] } }> {
   return new Promise<{ data: { values: BranchOverview[] } }>((resolve) =>
-    resolve({ data: { values: [{ id, name }] } })
+    resolve({ data: { values: [{ id, name, deploymentEnabled: true }] } })
   );
 }
 
@@ -218,6 +224,7 @@ function branch(id: string, name: string): Promise<{ data: Branch }> {
       data: {
         id,
         name,
+        deploymentEnabled: true,
         lastDeploymentDate: 'now',
         webSpace: {
           state: 'CREATED',
@@ -238,6 +245,7 @@ function notInitializedBranch(id: string, name: string): Promise<{ data: Branch 
       data: {
         id,
         name,
+        deploymentEnabled: true,
         lastDeploymentDate: 'now',
         webSpace: undefined,
       },

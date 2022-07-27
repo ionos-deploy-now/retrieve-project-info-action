@@ -7,11 +7,13 @@ export type Project = {
 export type BranchOverview = {
   id: string;
   name: string;
+  deploymentEnabled: boolean;
 };
 
 export type Branch = {
   id: string;
   name: string;
+  deploymentEnabled: boolean;
   lastDeploymentDate: string | undefined;
   webSpace: { state: string; webSpace: WebSpace } | undefined;
 };
