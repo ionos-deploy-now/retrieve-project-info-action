@@ -1954,6 +1954,109 @@ exports.checkBypass = checkBypass;
 
 /***/ }),
 
+/***/ 1009:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core = __importStar(__nccwpck_require__(2186));
+const input_1 = __importDefault(__nccwpck_require__(1614));
+const buildContext_1 = __importDefault(__nccwpck_require__(1398));
+class Action {
+    static run(action, configurationSupplier) {
+        try {
+            const configuration = configurationSupplier(new input_1.default(), new buildContext_1.default());
+            action(configuration).then((output) => Object.entries(output).forEach(([key, value]) => {
+                console.log(`${key}: ${value}`);
+                core.setOutput(key, value);
+            }));
+        }
+        catch (err) {
+            core.setFailed(err.message);
+        }
+    }
+}
+exports["default"] = Action;
+//# sourceMappingURL=action.js.map
+
+/***/ }),
+
+/***/ 1398:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const github = __importStar(__nccwpck_require__(5438));
+class BuildContext {
+    required(key) {
+        if (github.context[key] === undefined) {
+            throw new Error('Could not get context value ' + key);
+        }
+        return github.context[key].toString();
+    }
+    optional(key) {
+        if (github.context[key] === undefined) {
+            return null;
+        }
+        return github.context[key].toString();
+    }
+}
+exports["default"] = BuildContext;
+//# sourceMappingURL=buildContext.js.map
+
+/***/ }),
+
 /***/ 1614:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -13046,92 +13149,6 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
-/***/ 6144:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-const main_1 = __nccwpck_require__(9449);
-const action_1 = __importDefault(__nccwpck_require__(9342));
-action_1.default.run(main_1.retrieveProjectInfo, (input, context) => ({
-    serviceHost: input.required('service-host'),
-    apiKey: input.required('api-key'),
-    projectId: input.required('project'),
-    branchName: context.required('ref').replace(/refs\/heads\//g, ''),
-}));
-
-
-/***/ }),
-
-/***/ 9342:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-const core = __importStar(__nccwpck_require__(2186));
-const input_1 = __importDefault(__nccwpck_require__(1614));
-const buildContext_1 = __importDefault(__nccwpck_require__(5236));
-class Action {
-    static run(action, configurationSupplier) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const configuration = configurationSupplier(new input_1.default(), new buildContext_1.default());
-                action(configuration).then((output) => Object.entries(output).forEach(([key, value]) => {
-                    console.log(`${key}: ${value}`);
-                    core.setOutput(key, value);
-                }));
-            }
-            catch (err) {
-                core.setFailed(err.message);
-            }
-        });
-    }
-}
-exports["default"] = Action;
-
-
-/***/ }),
-
 /***/ 2724:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -13226,56 +13243,7 @@ exports["default"] = Retryable;
 
 /***/ }),
 
-/***/ 5236:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-const github = __importStar(__nccwpck_require__(5438));
-class BuildContext {
-    required(key) {
-        if (github.context[key] === undefined) {
-            throw new Error('Could not get context value ' + key);
-        }
-        return github.context[key].toString();
-    }
-    optional(key) {
-        if (github.context[key] === undefined) {
-            return null;
-        }
-        return github.context[key].toString();
-    }
-}
-exports["default"] = BuildContext;
-
-
-/***/ }),
-
-/***/ 9449:
+/***/ 9644:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -13295,6 +13263,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.retrieveProjectInfo = void 0;
 const deployNow_1 = __importDefault(__nccwpck_require__(2724));
+const core_1 = __nccwpck_require__(2186);
 function retrieveProjectInfo(configuration) {
     return __awaiter(this, void 0, void 0, function* () {
         const deployNowApi = new deployNow_1.default(configuration.serviceHost, configuration.apiKey);
@@ -13309,20 +13278,42 @@ function retrieveProjectInfo(configuration) {
             }
         }))();
         if (!branchOverview.deploymentEnabled) {
+            (0, core_1.warning)('The deployment is disabled for this branch');
             return { 'deployment-enabled': false };
         }
         const branch = yield deployNowApi.getBranch(configuration.projectId, branchOverview.id);
-        return new Promise((resolve) => resolve({
+        return {
             'deployment-enabled': branch.deploymentEnabled,
             'branch-id': branch.id,
             'site-url': isProductionBranch ? `https://${project.domain}` : branch.webSpace.webSpace.siteUrl,
             'remote-host': branch.webSpace.webSpace.sshHost,
             'storage-quota': branch.webSpace.webSpace.quota.storageQuota,
             'bootstrap-deploy': branch.lastDeploymentDate == null,
-        }));
+        };
     });
 }
 exports.retrieveProjectInfo = retrieveProjectInfo;
+
+
+/***/ }),
+
+/***/ 9449:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const action_1 = __nccwpck_require__(9644);
+const actions_core_1 = __importDefault(__nccwpck_require__(1009));
+actions_core_1.default.run(action_1.retrieveProjectInfo, (input, context) => ({
+    serviceHost: input.required('service-host'),
+    apiKey: input.required('api-key'),
+    projectId: input.required('project'),
+    branchName: context.required('ref').replace(/refs\/heads\//g, ''),
+}));
 
 
 /***/ }),
@@ -14341,7 +14332,7 @@ module.exports = JSON.parse('[[[0,44],"disallowed_STD3_valid"],[[45,46],"valid"]
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
 /******/ 	// This entry module is referenced by other modules so it can't be inlined
-/******/ 	var __webpack_exports__ = __nccwpck_require__(6144);
+/******/ 	var __webpack_exports__ = __nccwpck_require__(9449);
 /******/ 	module.exports = __webpack_exports__;
 /******/ 	
 /******/ })()
