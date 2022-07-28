@@ -1,6 +1,6 @@
 {
   "name": "retrieve-project-info-action",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "scripts": {
     "lint": "eslint src --max-warnings=0 --ext .ts",
     "test": "mocha --require ts-node/register src/test/*.spec.ts",
