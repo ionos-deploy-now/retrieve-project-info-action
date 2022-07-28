@@ -34,7 +34,7 @@ jobs:
           npm run build
       - name: Build release
         run: |
-          npm version ${{ inputs.version }}
+          npm version ${{ inputs.version }} --no-commit-hooks --no-git-tag-version
           npm run release
       - uses: stefanzweifel/git-auto-commit-action@v4
         id: commit-step
