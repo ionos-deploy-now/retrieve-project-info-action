@@ -8,7 +8,7 @@
     "release": "ncc build src/main/index.ts"
   },
   "dependencies": {
-    "@actions/core": "1.9.0",
+    "@actions/core": "1.9.1",
     "@actions/github": "5.0.3",
     "@ionos-deploy-now/actions-core": "^1.0.1",
     "axios": "^0.21.1",
