@@ -1,28 +1,44 @@
-import { expect } from 'chai';
+import chai, { expect } from 'chai';
 import { afterEach, describe } from 'mocha';
 import * as sinon from 'sinon';
 import * as uuid from 'uuid';
-import DeployNowApi from '../main/action/api/deployNow';
 import { retrieveProjectInfo } from '../main/action';
-import { Branch, BranchOverview, Project } from '../main/action/api/types';
+import {
+  AxiosIonosSpaceBranchApiClient,
+  AxiosIonosSpaceDeploymentApiClient,
+  BranchOverview,
+  Deployment,
+  DeploymentOverview,
+  DeploymentState,
+  Page,
+  WebspaceState,
+} from '../main/action/api/api';
 import * as core from '@actions/core';
+import chaiAsPromised from 'chai-as-promised';
 
 describe('Test main action function', () => {
+  before(() => {
+    chai.should();
+    chai.use(chaiAsPromised);
+  });
+
   afterEach(() => {
     sinon.restore();
   });
 
-  it('Info with production branch', async () => {
+  it('Info', async () => {
     const projectId = uuid.v4();
     const branchId = uuid.v4();
+    const deploymentId = uuid.v4();
+    const domain = 'test.com';
 
-    const projectStub = sinon.stub().returns(project(projectId, branchId));
-    const branchOverviewStub = sinon.stub().returns(branchOverview(branchId, 'main', true));
-    const branchStub = sinon.stub().returns(branch(branchId, 'main'));
+    const branchesStub = sinon.stub().resolves(response(page(branchOverview(branchId, 'main', 1))));
+    const deploymentsStub = sinon.stub().resolves(response(page(deploymentOverview(deploymentId))));
+    const deploymentStub = sinon.stub().resolves(response(deployment(deploymentId, domain, new Date())));
 
-    sinon.replace(DeployNowApi.prototype, 'getProject', projectStub);
-    sinon.replace(DeployNowApi.prototype, 'findBranch', branchOverviewStub);
-    sinon.replace(DeployNowApi.prototype, 'getBranch', branchStub);
+    sinon.replace(AxiosIonosSpaceBranchApiClient.prototype, 'getBranches', branchesStub);
+    sinon.replace(AxiosIonosSpaceDeploymentApiClient.prototype, 'getDeployments', deploymentsStub);
+    sinon.replace(AxiosIonosSpaceDeploymentApiClient.prototype, 'getDeployment', deploymentStub);
 
     const projectInfo = await retrieveProjectInfo({ apiKey: '', branchName: 'main', projectId, serviceHost: '' });
     const expected = {
@@ -30,56 +46,24 @@ describe('Test main action function', () => {
       'branch-id': branchId,
       'site-url': 'https://test.com',
       'remote-host': 'access-5000266734.webspace-host.com',
-      'storage-quota': '',
+      'storage-quota': 10,
       'bootstrap-deploy': false,
     };
 
     expect(projectInfo).to.deep.equal(expected);
-    expect(projectStub.calledOnceWith(projectId)).to.be.true;
-    expect(branchOverviewStub.called).to.be.false;
-    expect(branchStub.calledOnceWith(projectId, branchId)).to.be.true;
-  });
-
-  it('Info with staging branch', async () => {
-    const projectId = uuid.v4();
-    const branchId = uuid.v4();
-
-    const projectStub = sinon.stub().returns(project(projectId, branchId));
-    const branchOverviewStub = sinon.stub().returns(branchOverview(branchId, 'staging', true));
-    const branchStub = sinon.stub().returns(branch(branchId, 'staging'));
-
-    sinon.replace(DeployNowApi.prototype, 'getProject', projectStub);
-    sinon.replace(DeployNowApi.prototype, 'findBranch', branchOverviewStub);
-    sinon.replace(DeployNowApi.prototype, 'getBranch', branchStub);
-
-    const projectInfo = await retrieveProjectInfo({ apiKey: '', branchName: 'staging', projectId, serviceHost: '' });
-    const expected = {
-      'deployment-enabled': true,
-      'branch-id': branchId,
-      'site-url': 'https://home-5000266734.app-ionos.space',
-      'remote-host': 'access-5000266734.webspace-host.com',
-      'storage-quota': '',
-      'bootstrap-deploy': false,
-    };
-
-    expect(projectInfo).to.deep.equal(expected);
-    expect(projectStub.calledOnceWith(projectId)).to.be.true;
-    expect(branchOverviewStub.calledOnceWith(projectId, 'staging')).to.be.true;
-    expect(branchStub.calledOnceWith(projectId, branchId)).to.be.true;
+    expect(branchesStub.calledOnceWith('me', projectId, { name: 'main' })).to.be.true;
+    expect(deploymentsStub.calledOnceWith('me', projectId, branchId)).to.be.true;
+    expect(deploymentStub.calledOnceWith('me', projectId, branchId, deploymentId)).to.be.true;
   });
 
   it('Disabled deployment', async () => {
     const projectId = uuid.v4();
     const branchId = uuid.v4();
 
-    const projectStub = sinon.stub().returns(project(projectId, branchId));
-    const branchOverviewStub = sinon.stub().returns(branchOverview(branchId, 'staging', false));
-    const branchStub = sinon.stub().returns(branch(branchId, 'staging'));
+    const branchesStub = sinon.stub().resolves(response(page(branchOverview(branchId, 'staging', 0))));
     const warningFake = sinon.fake();
 
-    sinon.replace(DeployNowApi.prototype, 'getProject', projectStub);
-    sinon.replace(DeployNowApi.prototype, 'findBranch', branchOverviewStub);
-    sinon.replace(DeployNowApi.prototype, 'getBranch', branchStub);
+    sinon.replace(AxiosIonosSpaceBranchApiClient.prototype, 'getBranches', branchesStub);
     sinon.replace(core, 'warning', warningFake);
 
     const projectInfo = await retrieveProjectInfo({ apiKey: '', branchName: 'staging', projectId, serviceHost: '' });
@@ -88,46 +72,105 @@ describe('Test main action function', () => {
     };
 
     expect(projectInfo).to.deep.equal(expected);
-    expect(projectStub.calledOnceWith(projectId)).to.be.true;
-    expect(branchOverviewStub.calledOnceWith(projectId, 'staging')).to.be.true;
-    expect(branchStub.called).to.be.false;
+    expect(branchesStub.calledWithExactly('me', projectId, { name: 'staging' })).to.be.true;
     expect(warningFake.calledOnceWith('The deployment is disabled for this branch')).to.be.true;
+  });
+
+  it('Multi deployments not supported', async () => {
+    const projectId = uuid.v4();
+    const branchId = uuid.v4();
+
+    const branchesStub = sinon.stub().resolves(response(page(branchOverview(branchId, 'main', 2))));
+
+    sinon.replace(AxiosIonosSpaceBranchApiClient.prototype, 'getBranches', branchesStub);
+
+    retrieveProjectInfo({ apiKey: '', branchName: 'staging', projectId, serviceHost: '' }).should.be.rejectedWith(
+      "This action doesn't support multi deployments"
+    );
+
+    expect(branchesStub.calledOnceWith('me', projectId, { name: 'staging' })).to.be.true;
+  });
+
+  it('Branch not found', async () => {
+    const projectId = uuid.v4();
+
+    const branchesStub = sinon
+      .stub()
+      .resolves(response(new Page<BranchOverview>({ total: 0, pageSize: 10, pageNumber: 0, values: [] })));
+
+    sinon.replace(AxiosIonosSpaceBranchApiClient.prototype, 'getBranches', branchesStub);
+
+    retrieveProjectInfo({ apiKey: '', branchName: 'staging', projectId, serviceHost: '' }).should.be.rejectedWith(
+      'Branch staging not found in DeployNow'
+    );
+
+    expect(branchesStub.calledWithExactly('me', projectId, { name: 'staging' })).to.be.true;
   });
 });
 
-function project(id: string, branchId): Promise<Project> {
-  return new Promise<Project>((resolve) =>
-    resolve({
-      id,
-      domain: 'test.com',
-      productionBranch: {
-        id: branchId,
-        name: 'main',
-        deploymentEnabled: true,
-      },
-    })
-  );
+function branchOverview(id: string, name: string, deploymentCount: number): BranchOverview {
+  return {
+    id,
+    name,
+    deleted: false,
+    deploymentCount: deploymentCount,
+    productionBranch: false,
+    webUrl: '',
+    workflowPresent: false,
+  };
 }
 
-function branchOverview(id: string, name: string, deploymentEnabled: boolean): Promise<BranchOverview> {
-  return new Promise<BranchOverview>((resolve) => resolve({ id, name, deploymentEnabled }));
+function deploymentOverview(id: string): DeploymentOverview {
+  return {
+    id,
+    domain: { name: 'test.de', customDomain: true },
+    name: 'test',
+    state: {
+      state: DeploymentState.QUEUED,
+      occurrenceTime: new Date(),
+      externalId: '1234',
+    },
+    webspace: {
+      id: uuid.v4(),
+      siteUrl: 'https://test-site-url',
+      sshHost: 'test-ssh-host',
+    },
+  };
 }
 
-function branch(id: string, name: string): Promise<Branch> {
-  return new Promise<Branch>((resolve) =>
-    resolve({
-      id,
-      name,
-      deploymentEnabled: true,
-      lastDeploymentDate: Date.now().toString(),
-      webSpace: {
-        state: 'created',
-        webSpace: {
-          quota: { storageQuota: '' },
-          siteUrl: 'https://home-5000266734.app-ionos.space',
-          sshHost: 'access-5000266734.webspace-host.com',
+function deployment(id: string, domain: string, lastDeployedDate?: Date): Deployment {
+  return {
+    id,
+    domain: { name: domain, customDomain: true },
+    name: 'test',
+    state: {
+      state: DeploymentState.QUEUED,
+      occurrenceTime: new Date(),
+      externalId: '1234',
+      lastDeployedDate,
+    },
+    webspace: {
+      webspace: {
+        id: uuid.v4(),
+        siteUrl: 'https://test-site-url',
+        sshHost: 'access-5000266734.webspace-host.com',
+        username: 'test-user',
+        quota: {
+          storageQuota: 10,
+          storageUsage: 5,
+          fileQuota: 500,
+          fileUsage: 50,
         },
       },
-    })
-  );
+      state: WebspaceState.CREATED,
+    },
+  };
+}
+
+function page<T>(value: T): Page<T> {
+  return { pageNumber: 0, pageSize: 10, total: 1, values: [value] };
+}
+
+function response(data: any): any {
+  return { data };
 }

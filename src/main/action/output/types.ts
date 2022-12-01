@@ -3,7 +3,7 @@ export type ProjectInfo = {
   'branch-id': string;
   'site-url': string;
   'remote-host': string;
-  'storage-quota': string;
+  'storage-quota': number;
   'bootstrap-deploy': boolean;
 };
 
