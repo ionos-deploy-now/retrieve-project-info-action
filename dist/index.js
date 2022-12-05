@@ -8568,6 +8568,84 @@ function removeHook(state, name, method) {
 
 /***/ }),
 
+/***/ 8803:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+var GetIntrinsic = __nccwpck_require__(4538);
+
+var callBind = __nccwpck_require__(2977);
+
+var $indexOf = callBind(GetIntrinsic('String.prototype.indexOf'));
+
+module.exports = function callBoundIntrinsic(name, allowMissing) {
+	var intrinsic = GetIntrinsic(name, !!allowMissing);
+	if (typeof intrinsic === 'function' && $indexOf(name, '.prototype.') > -1) {
+		return callBind(intrinsic);
+	}
+	return intrinsic;
+};
+
+
+/***/ }),
+
+/***/ 2977:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+var bind = __nccwpck_require__(8334);
+var GetIntrinsic = __nccwpck_require__(4538);
+
+var $apply = GetIntrinsic('%Function.prototype.apply%');
+var $call = GetIntrinsic('%Function.prototype.call%');
+var $reflectApply = GetIntrinsic('%Reflect.apply%', true) || bind.call($call, $apply);
+
+var $gOPD = GetIntrinsic('%Object.getOwnPropertyDescriptor%', true);
+var $defineProperty = GetIntrinsic('%Object.defineProperty%', true);
+var $max = GetIntrinsic('%Math.max%');
+
+if ($defineProperty) {
+	try {
+		$defineProperty({}, 'a', { value: 1 });
+	} catch (e) {
+		// IE 8 has a broken defineProperty
+		$defineProperty = null;
+	}
+}
+
+module.exports = function callBind(originalFunction) {
+	var func = $reflectApply(bind, $call, arguments);
+	if ($gOPD && $defineProperty) {
+		var desc = $gOPD(func, 'length');
+		if (desc.configurable) {
+			// original length, plus the receiver, minus any additional arguments (after the receiver)
+			$defineProperty(
+				func,
+				'length',
+				{ value: 1 + $max(0, originalFunction.length - (arguments.length - 1)) }
+			);
+		}
+	}
+	return func;
+};
+
+var applyBind = function applyBind() {
+	return $reflectApply(bind, $apply, arguments);
+};
+
+if ($defineProperty) {
+	$defineProperty(module.exports, 'apply', { value: applyBind });
+} else {
+	module.exports.apply = applyBind;
+}
+
+
+/***/ }),
+
 /***/ 5443:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
@@ -10921,6 +10999,421 @@ module.exports = function(dst, src) {
 
 /***/ }),
 
+/***/ 9320:
+/***/ ((module) => {
+
+"use strict";
+
+
+/* eslint no-invalid-this: 1 */
+
+var ERROR_MESSAGE = 'Function.prototype.bind called on incompatible ';
+var slice = Array.prototype.slice;
+var toStr = Object.prototype.toString;
+var funcType = '[object Function]';
+
+module.exports = function bind(that) {
+    var target = this;
+    if (typeof target !== 'function' || toStr.call(target) !== funcType) {
+        throw new TypeError(ERROR_MESSAGE + target);
+    }
+    var args = slice.call(arguments, 1);
+
+    var bound;
+    var binder = function () {
+        if (this instanceof bound) {
+            var result = target.apply(
+                this,
+                args.concat(slice.call(arguments))
+            );
+            if (Object(result) === result) {
+                return result;
+            }
+            return this;
+        } else {
+            return target.apply(
+                that,
+                args.concat(slice.call(arguments))
+            );
+        }
+    };
+
+    var boundLength = Math.max(0, target.length - args.length);
+    var boundArgs = [];
+    for (var i = 0; i < boundLength; i++) {
+        boundArgs.push('$' + i);
+    }
+
+    bound = Function('binder', 'return function (' + boundArgs.join(',') + '){ return binder.apply(this,arguments); }')(binder);
+
+    if (target.prototype) {
+        var Empty = function Empty() {};
+        Empty.prototype = target.prototype;
+        bound.prototype = new Empty();
+        Empty.prototype = null;
+    }
+
+    return bound;
+};
+
+
+/***/ }),
+
+/***/ 8334:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+var implementation = __nccwpck_require__(9320);
+
+module.exports = Function.prototype.bind || implementation;
+
+
+/***/ }),
+
+/***/ 4538:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+var undefined;
+
+var $SyntaxError = SyntaxError;
+var $Function = Function;
+var $TypeError = TypeError;
+
+// eslint-disable-next-line consistent-return
+var getEvalledConstructor = function (expressionSyntax) {
+	try {
+		return $Function('"use strict"; return (' + expressionSyntax + ').constructor;')();
+	} catch (e) {}
+};
+
+var $gOPD = Object.getOwnPropertyDescriptor;
+if ($gOPD) {
+	try {
+		$gOPD({}, '');
+	} catch (e) {
+		$gOPD = null; // this is IE 8, which has a broken gOPD
+	}
+}
+
+var throwTypeError = function () {
+	throw new $TypeError();
+};
+var ThrowTypeError = $gOPD
+	? (function () {
+		try {
+			// eslint-disable-next-line no-unused-expressions, no-caller, no-restricted-properties
+			arguments.callee; // IE 8 does not throw here
+			return throwTypeError;
+		} catch (calleeThrows) {
+			try {
+				// IE 8 throws on Object.getOwnPropertyDescriptor(arguments, '')
+				return $gOPD(arguments, 'callee').get;
+			} catch (gOPDthrows) {
+				return throwTypeError;
+			}
+		}
+	}())
+	: throwTypeError;
+
+var hasSymbols = __nccwpck_require__(587)();
+
+var getProto = Object.getPrototypeOf || function (x) { return x.__proto__; }; // eslint-disable-line no-proto
+
+var needsEval = {};
+
+var TypedArray = typeof Uint8Array === 'undefined' ? undefined : getProto(Uint8Array);
+
+var INTRINSICS = {
+	'%AggregateError%': typeof AggregateError === 'undefined' ? undefined : AggregateError,
+	'%Array%': Array,
+	'%ArrayBuffer%': typeof ArrayBuffer === 'undefined' ? undefined : ArrayBuffer,
+	'%ArrayIteratorPrototype%': hasSymbols ? getProto([][Symbol.iterator]()) : undefined,
+	'%AsyncFromSyncIteratorPrototype%': undefined,
+	'%AsyncFunction%': needsEval,
+	'%AsyncGenerator%': needsEval,
+	'%AsyncGeneratorFunction%': needsEval,
+	'%AsyncIteratorPrototype%': needsEval,
+	'%Atomics%': typeof Atomics === 'undefined' ? undefined : Atomics,
+	'%BigInt%': typeof BigInt === 'undefined' ? undefined : BigInt,
+	'%Boolean%': Boolean,
+	'%DataView%': typeof DataView === 'undefined' ? undefined : DataView,
+	'%Date%': Date,
+	'%decodeURI%': decodeURI,
+	'%decodeURIComponent%': decodeURIComponent,
+	'%encodeURI%': encodeURI,
+	'%encodeURIComponent%': encodeURIComponent,
+	'%Error%': Error,
+	'%eval%': eval, // eslint-disable-line no-eval
+	'%EvalError%': EvalError,
+	'%Float32Array%': typeof Float32Array === 'undefined' ? undefined : Float32Array,
+	'%Float64Array%': typeof Float64Array === 'undefined' ? undefined : Float64Array,
+	'%FinalizationRegistry%': typeof FinalizationRegistry === 'undefined' ? undefined : FinalizationRegistry,
+	'%Function%': $Function,
+	'%GeneratorFunction%': needsEval,
+	'%Int8Array%': typeof Int8Array === 'undefined' ? undefined : Int8Array,
+	'%Int16Array%': typeof Int16Array === 'undefined' ? undefined : Int16Array,
+	'%Int32Array%': typeof Int32Array === 'undefined' ? undefined : Int32Array,
+	'%isFinite%': isFinite,
+	'%isNaN%': isNaN,
+	'%IteratorPrototype%': hasSymbols ? getProto(getProto([][Symbol.iterator]())) : undefined,
+	'%JSON%': typeof JSON === 'object' ? JSON : undefined,
+	'%Map%': typeof Map === 'undefined' ? undefined : Map,
+	'%MapIteratorPrototype%': typeof Map === 'undefined' || !hasSymbols ? undefined : getProto(new Map()[Symbol.iterator]()),
+	'%Math%': Math,
+	'%Number%': Number,
+	'%Object%': Object,
+	'%parseFloat%': parseFloat,
+	'%parseInt%': parseInt,
+	'%Promise%': typeof Promise === 'undefined' ? undefined : Promise,
+	'%Proxy%': typeof Proxy === 'undefined' ? undefined : Proxy,
+	'%RangeError%': RangeError,
+	'%ReferenceError%': ReferenceError,
+	'%Reflect%': typeof Reflect === 'undefined' ? undefined : Reflect,
+	'%RegExp%': RegExp,
+	'%Set%': typeof Set === 'undefined' ? undefined : Set,
+	'%SetIteratorPrototype%': typeof Set === 'undefined' || !hasSymbols ? undefined : getProto(new Set()[Symbol.iterator]()),
+	'%SharedArrayBuffer%': typeof SharedArrayBuffer === 'undefined' ? undefined : SharedArrayBuffer,
+	'%String%': String,
+	'%StringIteratorPrototype%': hasSymbols ? getProto(''[Symbol.iterator]()) : undefined,
+	'%Symbol%': hasSymbols ? Symbol : undefined,
+	'%SyntaxError%': $SyntaxError,
+	'%ThrowTypeError%': ThrowTypeError,
+	'%TypedArray%': TypedArray,
+	'%TypeError%': $TypeError,
+	'%Uint8Array%': typeof Uint8Array === 'undefined' ? undefined : Uint8Array,
+	'%Uint8ClampedArray%': typeof Uint8ClampedArray === 'undefined' ? undefined : Uint8ClampedArray,
+	'%Uint16Array%': typeof Uint16Array === 'undefined' ? undefined : Uint16Array,
+	'%Uint32Array%': typeof Uint32Array === 'undefined' ? undefined : Uint32Array,
+	'%URIError%': URIError,
+	'%WeakMap%': typeof WeakMap === 'undefined' ? undefined : WeakMap,
+	'%WeakRef%': typeof WeakRef === 'undefined' ? undefined : WeakRef,
+	'%WeakSet%': typeof WeakSet === 'undefined' ? undefined : WeakSet
+};
+
+var doEval = function doEval(name) {
+	var value;
+	if (name === '%AsyncFunction%') {
+		value = getEvalledConstructor('async function () {}');
+	} else if (name === '%GeneratorFunction%') {
+		value = getEvalledConstructor('function* () {}');
+	} else if (name === '%AsyncGeneratorFunction%') {
+		value = getEvalledConstructor('async function* () {}');
+	} else if (name === '%AsyncGenerator%') {
+		var fn = doEval('%AsyncGeneratorFunction%');
+		if (fn) {
+			value = fn.prototype;
+		}
+	} else if (name === '%AsyncIteratorPrototype%') {
+		var gen = doEval('%AsyncGenerator%');
+		if (gen) {
+			value = getProto(gen.prototype);
+		}
+	}
+
+	INTRINSICS[name] = value;
+
+	return value;
+};
+
+var LEGACY_ALIASES = {
+	'%ArrayBufferPrototype%': ['ArrayBuffer', 'prototype'],
+	'%ArrayPrototype%': ['Array', 'prototype'],
+	'%ArrayProto_entries%': ['Array', 'prototype', 'entries'],
+	'%ArrayProto_forEach%': ['Array', 'prototype', 'forEach'],
+	'%ArrayProto_keys%': ['Array', 'prototype', 'keys'],
+	'%ArrayProto_values%': ['Array', 'prototype', 'values'],
+	'%AsyncFunctionPrototype%': ['AsyncFunction', 'prototype'],
+	'%AsyncGenerator%': ['AsyncGeneratorFunction', 'prototype'],
+	'%AsyncGeneratorPrototype%': ['AsyncGeneratorFunction', 'prototype', 'prototype'],
+	'%BooleanPrototype%': ['Boolean', 'prototype'],
+	'%DataViewPrototype%': ['DataView', 'prototype'],
+	'%DatePrototype%': ['Date', 'prototype'],
+	'%ErrorPrototype%': ['Error', 'prototype'],
+	'%EvalErrorPrototype%': ['EvalError', 'prototype'],
+	'%Float32ArrayPrototype%': ['Float32Array', 'prototype'],
+	'%Float64ArrayPrototype%': ['Float64Array', 'prototype'],
+	'%FunctionPrototype%': ['Function', 'prototype'],
+	'%Generator%': ['GeneratorFunction', 'prototype'],
+	'%GeneratorPrototype%': ['GeneratorFunction', 'prototype', 'prototype'],
+	'%Int8ArrayPrototype%': ['Int8Array', 'prototype'],
+	'%Int16ArrayPrototype%': ['Int16Array', 'prototype'],
+	'%Int32ArrayPrototype%': ['Int32Array', 'prototype'],
+	'%JSONParse%': ['JSON', 'parse'],
+	'%JSONStringify%': ['JSON', 'stringify'],
+	'%MapPrototype%': ['Map', 'prototype'],
+	'%NumberPrototype%': ['Number', 'prototype'],
+	'%ObjectPrototype%': ['Object', 'prototype'],
+	'%ObjProto_toString%': ['Object', 'prototype', 'toString'],
+	'%ObjProto_valueOf%': ['Object', 'prototype', 'valueOf'],
+	'%PromisePrototype%': ['Promise', 'prototype'],
+	'%PromiseProto_then%': ['Promise', 'prototype', 'then'],
+	'%Promise_all%': ['Promise', 'all'],
+	'%Promise_reject%': ['Promise', 'reject'],
+	'%Promise_resolve%': ['Promise', 'resolve'],
+	'%RangeErrorPrototype%': ['RangeError', 'prototype'],
+	'%ReferenceErrorPrototype%': ['ReferenceError', 'prototype'],
+	'%RegExpPrototype%': ['RegExp', 'prototype'],
+	'%SetPrototype%': ['Set', 'prototype'],
+	'%SharedArrayBufferPrototype%': ['SharedArrayBuffer', 'prototype'],
+	'%StringPrototype%': ['String', 'prototype'],
+	'%SymbolPrototype%': ['Symbol', 'prototype'],
+	'%SyntaxErrorPrototype%': ['SyntaxError', 'prototype'],
+	'%TypedArrayPrototype%': ['TypedArray', 'prototype'],
+	'%TypeErrorPrototype%': ['TypeError', 'prototype'],
+	'%Uint8ArrayPrototype%': ['Uint8Array', 'prototype'],
+	'%Uint8ClampedArrayPrototype%': ['Uint8ClampedArray', 'prototype'],
+	'%Uint16ArrayPrototype%': ['Uint16Array', 'prototype'],
+	'%Uint32ArrayPrototype%': ['Uint32Array', 'prototype'],
+	'%URIErrorPrototype%': ['URIError', 'prototype'],
+	'%WeakMapPrototype%': ['WeakMap', 'prototype'],
+	'%WeakSetPrototype%': ['WeakSet', 'prototype']
+};
+
+var bind = __nccwpck_require__(8334);
+var hasOwn = __nccwpck_require__(6339);
+var $concat = bind.call(Function.call, Array.prototype.concat);
+var $spliceApply = bind.call(Function.apply, Array.prototype.splice);
+var $replace = bind.call(Function.call, String.prototype.replace);
+var $strSlice = bind.call(Function.call, String.prototype.slice);
+var $exec = bind.call(Function.call, RegExp.prototype.exec);
+
+/* adapted from https://github.com/lodash/lodash/blob/4.17.15/dist/lodash.js#L6735-L6744 */
+var rePropName = /[^%.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|%$))/g;
+var reEscapeChar = /\\(\\)?/g; /** Used to match backslashes in property paths. */
+var stringToPath = function stringToPath(string) {
+	var first = $strSlice(string, 0, 1);
+	var last = $strSlice(string, -1);
+	if (first === '%' && last !== '%') {
+		throw new $SyntaxError('invalid intrinsic syntax, expected closing `%`');
+	} else if (last === '%' && first !== '%') {
+		throw new $SyntaxError('invalid intrinsic syntax, expected opening `%`');
+	}
+	var result = [];
+	$replace(string, rePropName, function (match, number, quote, subString) {
+		result[result.length] = quote ? $replace(subString, reEscapeChar, '$1') : number || match;
+	});
+	return result;
+};
+/* end adaptation */
+
+var getBaseIntrinsic = function getBaseIntrinsic(name, allowMissing) {
+	var intrinsicName = name;
+	var alias;
+	if (hasOwn(LEGACY_ALIASES, intrinsicName)) {
+		alias = LEGACY_ALIASES[intrinsicName];
+		intrinsicName = '%' + alias[0] + '%';
+	}
+
+	if (hasOwn(INTRINSICS, intrinsicName)) {
+		var value = INTRINSICS[intrinsicName];
+		if (value === needsEval) {
+			value = doEval(intrinsicName);
+		}
+		if (typeof value === 'undefined' && !allowMissing) {
+			throw new $TypeError('intrinsic ' + name + ' exists, but is not available. Please file an issue!');
+		}
+
+		return {
+			alias: alias,
+			name: intrinsicName,
+			value: value
+		};
+	}
+
+	throw new $SyntaxError('intrinsic ' + name + ' does not exist!');
+};
+
+module.exports = function GetIntrinsic(name, allowMissing) {
+	if (typeof name !== 'string' || name.length === 0) {
+		throw new $TypeError('intrinsic name must be a non-empty string');
+	}
+	if (arguments.length > 1 && typeof allowMissing !== 'boolean') {
+		throw new $TypeError('"allowMissing" argument must be a boolean');
+	}
+
+	if ($exec(/^%?[^%]*%?$/, name) === null) {
+		throw new $SyntaxError('`%` may not be present anywhere but at the beginning and end of the intrinsic name');
+	}
+	var parts = stringToPath(name);
+	var intrinsicBaseName = parts.length > 0 ? parts[0] : '';
+
+	var intrinsic = getBaseIntrinsic('%' + intrinsicBaseName + '%', allowMissing);
+	var intrinsicRealName = intrinsic.name;
+	var value = intrinsic.value;
+	var skipFurtherCaching = false;
+
+	var alias = intrinsic.alias;
+	if (alias) {
+		intrinsicBaseName = alias[0];
+		$spliceApply(parts, $concat([0, 1], alias));
+	}
+
+	for (var i = 1, isOwn = true; i < parts.length; i += 1) {
+		var part = parts[i];
+		var first = $strSlice(part, 0, 1);
+		var last = $strSlice(part, -1);
+		if (
+			(
+				(first === '"' || first === "'" || first === '`')
+				|| (last === '"' || last === "'" || last === '`')
+			)
+			&& first !== last
+		) {
+			throw new $SyntaxError('property names with quotes must have matching quotes');
+		}
+		if (part === 'constructor' || !isOwn) {
+			skipFurtherCaching = true;
+		}
+
+		intrinsicBaseName += '.' + part;
+		intrinsicRealName = '%' + intrinsicBaseName + '%';
+
+		if (hasOwn(INTRINSICS, intrinsicRealName)) {
+			value = INTRINSICS[intrinsicRealName];
+		} else if (value != null) {
+			if (!(part in value)) {
+				if (!allowMissing) {
+					throw new $TypeError('base intrinsic for ' + name + ' exists, but the property is not available.');
+				}
+				return void undefined;
+			}
+			if ($gOPD && (i + 1) >= parts.length) {
+				var desc = $gOPD(value, part);
+				isOwn = !!desc;
+
+				// By convention, when a data property is converted to an accessor
+				// property to emulate a data property that does not suffer from
+				// the override mistake, that accessor's getter is marked with
+				// an `originalValue` property. Here, when we detect this, we
+				// uphold the illusion by pretending to see that original data
+				// property, i.e., returning the value rather than the getter
+				// itself.
+				if (isOwn && 'get' in desc && !('originalValue' in desc.get)) {
+					value = desc.get;
+				} else {
+					value = value[part];
+				}
+			} else {
+				isOwn = hasOwn(value, part);
+				value = value[part];
+			}
+
+			if (isOwn && !skipFurtherCaching) {
+				INTRINSICS[intrinsicRealName] = value;
+			}
+		}
+	}
+	return value;
+};
+
+
+/***/ }),
+
 /***/ 1621:
 /***/ ((module) => {
 
@@ -10933,6 +11426,90 @@ module.exports = (flag, argv = process.argv) => {
 	const terminatorPosition = argv.indexOf('--');
 	return position !== -1 && (terminatorPosition === -1 || position < terminatorPosition);
 };
+
+
+/***/ }),
+
+/***/ 587:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+var origSymbol = typeof Symbol !== 'undefined' && Symbol;
+var hasSymbolSham = __nccwpck_require__(7747);
+
+module.exports = function hasNativeSymbols() {
+	if (typeof origSymbol !== 'function') { return false; }
+	if (typeof Symbol !== 'function') { return false; }
+	if (typeof origSymbol('foo') !== 'symbol') { return false; }
+	if (typeof Symbol('bar') !== 'symbol') { return false; }
+
+	return hasSymbolSham();
+};
+
+
+/***/ }),
+
+/***/ 7747:
+/***/ ((module) => {
+
+"use strict";
+
+
+/* eslint complexity: [2, 18], max-statements: [2, 33] */
+module.exports = function hasSymbols() {
+	if (typeof Symbol !== 'function' || typeof Object.getOwnPropertySymbols !== 'function') { return false; }
+	if (typeof Symbol.iterator === 'symbol') { return true; }
+
+	var obj = {};
+	var sym = Symbol('test');
+	var symObj = Object(sym);
+	if (typeof sym === 'string') { return false; }
+
+	if (Object.prototype.toString.call(sym) !== '[object Symbol]') { return false; }
+	if (Object.prototype.toString.call(symObj) !== '[object Symbol]') { return false; }
+
+	// temp disabled per https://github.com/ljharb/object.assign/issues/17
+	// if (sym instanceof Symbol) { return false; }
+	// temp disabled per https://github.com/WebReflection/get-own-property-symbols/issues/4
+	// if (!(symObj instanceof Symbol)) { return false; }
+
+	// if (typeof Symbol.prototype.toString !== 'function') { return false; }
+	// if (String(sym) !== Symbol.prototype.toString.call(sym)) { return false; }
+
+	var symVal = 42;
+	obj[sym] = symVal;
+	for (sym in obj) { return false; } // eslint-disable-line no-restricted-syntax, no-unreachable-loop
+	if (typeof Object.keys === 'function' && Object.keys(obj).length !== 0) { return false; }
+
+	if (typeof Object.getOwnPropertyNames === 'function' && Object.getOwnPropertyNames(obj).length !== 0) { return false; }
+
+	var syms = Object.getOwnPropertySymbols(obj);
+	if (syms.length !== 1 || syms[0] !== sym) { return false; }
+
+	if (!Object.prototype.propertyIsEnumerable.call(obj, sym)) { return false; }
+
+	if (typeof Object.getOwnPropertyDescriptor === 'function') {
+		var descriptor = Object.getOwnPropertyDescriptor(obj, sym);
+		if (descriptor.value !== symVal || descriptor.enumerable !== true) { return false; }
+	}
+
+	return true;
+};
+
+
+/***/ }),
+
+/***/ 6339:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+var bind = __nccwpck_require__(8334);
+
+module.exports = bind.call(Function.call, Object.prototype.hasOwnProperty);
 
 
 /***/ }),
@@ -13119,6 +13696,533 @@ exports.FetchError = FetchError;
 
 /***/ }),
 
+/***/ 504:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+var hasMap = typeof Map === 'function' && Map.prototype;
+var mapSizeDescriptor = Object.getOwnPropertyDescriptor && hasMap ? Object.getOwnPropertyDescriptor(Map.prototype, 'size') : null;
+var mapSize = hasMap && mapSizeDescriptor && typeof mapSizeDescriptor.get === 'function' ? mapSizeDescriptor.get : null;
+var mapForEach = hasMap && Map.prototype.forEach;
+var hasSet = typeof Set === 'function' && Set.prototype;
+var setSizeDescriptor = Object.getOwnPropertyDescriptor && hasSet ? Object.getOwnPropertyDescriptor(Set.prototype, 'size') : null;
+var setSize = hasSet && setSizeDescriptor && typeof setSizeDescriptor.get === 'function' ? setSizeDescriptor.get : null;
+var setForEach = hasSet && Set.prototype.forEach;
+var hasWeakMap = typeof WeakMap === 'function' && WeakMap.prototype;
+var weakMapHas = hasWeakMap ? WeakMap.prototype.has : null;
+var hasWeakSet = typeof WeakSet === 'function' && WeakSet.prototype;
+var weakSetHas = hasWeakSet ? WeakSet.prototype.has : null;
+var hasWeakRef = typeof WeakRef === 'function' && WeakRef.prototype;
+var weakRefDeref = hasWeakRef ? WeakRef.prototype.deref : null;
+var booleanValueOf = Boolean.prototype.valueOf;
+var objectToString = Object.prototype.toString;
+var functionToString = Function.prototype.toString;
+var $match = String.prototype.match;
+var $slice = String.prototype.slice;
+var $replace = String.prototype.replace;
+var $toUpperCase = String.prototype.toUpperCase;
+var $toLowerCase = String.prototype.toLowerCase;
+var $test = RegExp.prototype.test;
+var $concat = Array.prototype.concat;
+var $join = Array.prototype.join;
+var $arrSlice = Array.prototype.slice;
+var $floor = Math.floor;
+var bigIntValueOf = typeof BigInt === 'function' ? BigInt.prototype.valueOf : null;
+var gOPS = Object.getOwnPropertySymbols;
+var symToString = typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol' ? Symbol.prototype.toString : null;
+var hasShammedSymbols = typeof Symbol === 'function' && typeof Symbol.iterator === 'object';
+// ie, `has-tostringtag/shams
+var toStringTag = typeof Symbol === 'function' && Symbol.toStringTag && (typeof Symbol.toStringTag === hasShammedSymbols ? 'object' : 'symbol')
+    ? Symbol.toStringTag
+    : null;
+var isEnumerable = Object.prototype.propertyIsEnumerable;
+
+var gPO = (typeof Reflect === 'function' ? Reflect.getPrototypeOf : Object.getPrototypeOf) || (
+    [].__proto__ === Array.prototype // eslint-disable-line no-proto
+        ? function (O) {
+            return O.__proto__; // eslint-disable-line no-proto
+        }
+        : null
+);
+
+function addNumericSeparator(num, str) {
+    if (
+        num === Infinity
+        || num === -Infinity
+        || num !== num
+        || (num && num > -1000 && num < 1000)
+        || $test.call(/e/, str)
+    ) {
+        return str;
+    }
+    var sepRegex = /[0-9](?=(?:[0-9]{3})+(?![0-9]))/g;
+    if (typeof num === 'number') {
+        var int = num < 0 ? -$floor(-num) : $floor(num); // trunc(num)
+        if (int !== num) {
+            var intStr = String(int);
+            var dec = $slice.call(str, intStr.length + 1);
+            return $replace.call(intStr, sepRegex, '$&_') + '.' + $replace.call($replace.call(dec, /([0-9]{3})/g, '$&_'), /_$/, '');
+        }
+    }
+    return $replace.call(str, sepRegex, '$&_');
+}
+
+var utilInspect = __nccwpck_require__(7265);
+var inspectCustom = utilInspect.custom;
+var inspectSymbol = isSymbol(inspectCustom) ? inspectCustom : null;
+
+module.exports = function inspect_(obj, options, depth, seen) {
+    var opts = options || {};
+
+    if (has(opts, 'quoteStyle') && (opts.quoteStyle !== 'single' && opts.quoteStyle !== 'double')) {
+        throw new TypeError('option "quoteStyle" must be "single" or "double"');
+    }
+    if (
+        has(opts, 'maxStringLength') && (typeof opts.maxStringLength === 'number'
+            ? opts.maxStringLength < 0 && opts.maxStringLength !== Infinity
+            : opts.maxStringLength !== null
+        )
+    ) {
+        throw new TypeError('option "maxStringLength", if provided, must be a positive integer, Infinity, or `null`');
+    }
+    var customInspect = has(opts, 'customInspect') ? opts.customInspect : true;
+    if (typeof customInspect !== 'boolean' && customInspect !== 'symbol') {
+        throw new TypeError('option "customInspect", if provided, must be `true`, `false`, or `\'symbol\'`');
+    }
+
+    if (
+        has(opts, 'indent')
+        && opts.indent !== null
+        && opts.indent !== '\t'
+        && !(parseInt(opts.indent, 10) === opts.indent && opts.indent > 0)
+    ) {
+        throw new TypeError('option "indent" must be "\\t", an integer > 0, or `null`');
+    }
+    if (has(opts, 'numericSeparator') && typeof opts.numericSeparator !== 'boolean') {
+        throw new TypeError('option "numericSeparator", if provided, must be `true` or `false`');
+    }
+    var numericSeparator = opts.numericSeparator;
+
+    if (typeof obj === 'undefined') {
+        return 'undefined';
+    }
+    if (obj === null) {
+        return 'null';
+    }
+    if (typeof obj === 'boolean') {
+        return obj ? 'true' : 'false';
+    }
+
+    if (typeof obj === 'string') {
+        return inspectString(obj, opts);
+    }
+    if (typeof obj === 'number') {
+        if (obj === 0) {
+            return Infinity / obj > 0 ? '0' : '-0';
+        }
+        var str = String(obj);
+        return numericSeparator ? addNumericSeparator(obj, str) : str;
+    }
+    if (typeof obj === 'bigint') {
+        var bigIntStr = String(obj) + 'n';
+        return numericSeparator ? addNumericSeparator(obj, bigIntStr) : bigIntStr;
+    }
+
+    var maxDepth = typeof opts.depth === 'undefined' ? 5 : opts.depth;
+    if (typeof depth === 'undefined') { depth = 0; }
+    if (depth >= maxDepth && maxDepth > 0 && typeof obj === 'object') {
+        return isArray(obj) ? '[Array]' : '[Object]';
+    }
+
+    var indent = getIndent(opts, depth);
+
+    if (typeof seen === 'undefined') {
+        seen = [];
+    } else if (indexOf(seen, obj) >= 0) {
+        return '[Circular]';
+    }
+
+    function inspect(value, from, noIndent) {
+        if (from) {
+            seen = $arrSlice.call(seen);
+            seen.push(from);
+        }
+        if (noIndent) {
+            var newOpts = {
+                depth: opts.depth
+            };
+            if (has(opts, 'quoteStyle')) {
+                newOpts.quoteStyle = opts.quoteStyle;
+            }
+            return inspect_(value, newOpts, depth + 1, seen);
+        }
+        return inspect_(value, opts, depth + 1, seen);
+    }
+
+    if (typeof obj === 'function' && !isRegExp(obj)) { // in older engines, regexes are callable
+        var name = nameOf(obj);
+        var keys = arrObjKeys(obj, inspect);
+        return '[Function' + (name ? ': ' + name : ' (anonymous)') + ']' + (keys.length > 0 ? ' { ' + $join.call(keys, ', ') + ' }' : '');
+    }
+    if (isSymbol(obj)) {
+        var symString = hasShammedSymbols ? $replace.call(String(obj), /^(Symbol\(.*\))_[^)]*$/, '$1') : symToString.call(obj);
+        return typeof obj === 'object' && !hasShammedSymbols ? markBoxed(symString) : symString;
+    }
+    if (isElement(obj)) {
+        var s = '<' + $toLowerCase.call(String(obj.nodeName));
+        var attrs = obj.attributes || [];
+        for (var i = 0; i < attrs.length; i++) {
+            s += ' ' + attrs[i].name + '=' + wrapQuotes(quote(attrs[i].value), 'double', opts);
+        }
+        s += '>';
+        if (obj.childNodes && obj.childNodes.length) { s += '...'; }
+        s += '</' + $toLowerCase.call(String(obj.nodeName)) + '>';
+        return s;
+    }
+    if (isArray(obj)) {
+        if (obj.length === 0) { return '[]'; }
+        var xs = arrObjKeys(obj, inspect);
+        if (indent && !singleLineValues(xs)) {
+            return '[' + indentedJoin(xs, indent) + ']';
+        }
+        return '[ ' + $join.call(xs, ', ') + ' ]';
+    }
+    if (isError(obj)) {
+        var parts = arrObjKeys(obj, inspect);
+        if (!('cause' in Error.prototype) && 'cause' in obj && !isEnumerable.call(obj, 'cause')) {
+            return '{ [' + String(obj) + '] ' + $join.call($concat.call('[cause]: ' + inspect(obj.cause), parts), ', ') + ' }';
+        }
+        if (parts.length === 0) { return '[' + String(obj) + ']'; }
+        return '{ [' + String(obj) + '] ' + $join.call(parts, ', ') + ' }';
+    }
+    if (typeof obj === 'object' && customInspect) {
+        if (inspectSymbol && typeof obj[inspectSymbol] === 'function' && utilInspect) {
+            return utilInspect(obj, { depth: maxDepth - depth });
+        } else if (customInspect !== 'symbol' && typeof obj.inspect === 'function') {
+            return obj.inspect();
+        }
+    }
+    if (isMap(obj)) {
+        var mapParts = [];
+        mapForEach.call(obj, function (value, key) {
+            mapParts.push(inspect(key, obj, true) + ' => ' + inspect(value, obj));
+        });
+        return collectionOf('Map', mapSize.call(obj), mapParts, indent);
+    }
+    if (isSet(obj)) {
+        var setParts = [];
+        setForEach.call(obj, function (value) {
+            setParts.push(inspect(value, obj));
+        });
+        return collectionOf('Set', setSize.call(obj), setParts, indent);
+    }
+    if (isWeakMap(obj)) {
+        return weakCollectionOf('WeakMap');
+    }
+    if (isWeakSet(obj)) {
+        return weakCollectionOf('WeakSet');
+    }
+    if (isWeakRef(obj)) {
+        return weakCollectionOf('WeakRef');
+    }
+    if (isNumber(obj)) {
+        return markBoxed(inspect(Number(obj)));
+    }
+    if (isBigInt(obj)) {
+        return markBoxed(inspect(bigIntValueOf.call(obj)));
+    }
+    if (isBoolean(obj)) {
+        return markBoxed(booleanValueOf.call(obj));
+    }
+    if (isString(obj)) {
+        return markBoxed(inspect(String(obj)));
+    }
+    if (!isDate(obj) && !isRegExp(obj)) {
+        var ys = arrObjKeys(obj, inspect);
+        var isPlainObject = gPO ? gPO(obj) === Object.prototype : obj instanceof Object || obj.constructor === Object;
+        var protoTag = obj instanceof Object ? '' : 'null prototype';
+        var stringTag = !isPlainObject && toStringTag && Object(obj) === obj && toStringTag in obj ? $slice.call(toStr(obj), 8, -1) : protoTag ? 'Object' : '';
+        var constructorTag = isPlainObject || typeof obj.constructor !== 'function' ? '' : obj.constructor.name ? obj.constructor.name + ' ' : '';
+        var tag = constructorTag + (stringTag || protoTag ? '[' + $join.call($concat.call([], stringTag || [], protoTag || []), ': ') + '] ' : '');
+        if (ys.length === 0) { return tag + '{}'; }
+        if (indent) {
+            return tag + '{' + indentedJoin(ys, indent) + '}';
+        }
+        return tag + '{ ' + $join.call(ys, ', ') + ' }';
+    }
+    return String(obj);
+};
+
+function wrapQuotes(s, defaultStyle, opts) {
+    var quoteChar = (opts.quoteStyle || defaultStyle) === 'double' ? '"' : "'";
+    return quoteChar + s + quoteChar;
+}
+
+function quote(s) {
+    return $replace.call(String(s), /"/g, '&quot;');
+}
+
+function isArray(obj) { return toStr(obj) === '[object Array]' && (!toStringTag || !(typeof obj === 'object' && toStringTag in obj)); }
+function isDate(obj) { return toStr(obj) === '[object Date]' && (!toStringTag || !(typeof obj === 'object' && toStringTag in obj)); }
+function isRegExp(obj) { return toStr(obj) === '[object RegExp]' && (!toStringTag || !(typeof obj === 'object' && toStringTag in obj)); }
+function isError(obj) { return toStr(obj) === '[object Error]' && (!toStringTag || !(typeof obj === 'object' && toStringTag in obj)); }
+function isString(obj) { return toStr(obj) === '[object String]' && (!toStringTag || !(typeof obj === 'object' && toStringTag in obj)); }
+function isNumber(obj) { return toStr(obj) === '[object Number]' && (!toStringTag || !(typeof obj === 'object' && toStringTag in obj)); }
+function isBoolean(obj) { return toStr(obj) === '[object Boolean]' && (!toStringTag || !(typeof obj === 'object' && toStringTag in obj)); }
+
+// Symbol and BigInt do have Symbol.toStringTag by spec, so that can't be used to eliminate false positives
+function isSymbol(obj) {
+    if (hasShammedSymbols) {
+        return obj && typeof obj === 'object' && obj instanceof Symbol;
+    }
+    if (typeof obj === 'symbol') {
+        return true;
+    }
+    if (!obj || typeof obj !== 'object' || !symToString) {
+        return false;
+    }
+    try {
+        symToString.call(obj);
+        return true;
+    } catch (e) {}
+    return false;
+}
+
+function isBigInt(obj) {
+    if (!obj || typeof obj !== 'object' || !bigIntValueOf) {
+        return false;
+    }
+    try {
+        bigIntValueOf.call(obj);
+        return true;
+    } catch (e) {}
+    return false;
+}
+
+var hasOwn = Object.prototype.hasOwnProperty || function (key) { return key in this; };
+function has(obj, key) {
+    return hasOwn.call(obj, key);
+}
+
+function toStr(obj) {
+    return objectToString.call(obj);
+}
+
+function nameOf(f) {
+    if (f.name) { return f.name; }
+    var m = $match.call(functionToString.call(f), /^function\s*([\w$]+)/);
+    if (m) { return m[1]; }
+    return null;
+}
+
+function indexOf(xs, x) {
+    if (xs.indexOf) { return xs.indexOf(x); }
+    for (var i = 0, l = xs.length; i < l; i++) {
+        if (xs[i] === x) { return i; }
+    }
+    return -1;
+}
+
+function isMap(x) {
+    if (!mapSize || !x || typeof x !== 'object') {
+        return false;
+    }
+    try {
+        mapSize.call(x);
+        try {
+            setSize.call(x);
+        } catch (s) {
+            return true;
+        }
+        return x instanceof Map; // core-js workaround, pre-v2.5.0
+    } catch (e) {}
+    return false;
+}
+
+function isWeakMap(x) {
+    if (!weakMapHas || !x || typeof x !== 'object') {
+        return false;
+    }
+    try {
+        weakMapHas.call(x, weakMapHas);
+        try {
+            weakSetHas.call(x, weakSetHas);
+        } catch (s) {
+            return true;
+        }
+        return x instanceof WeakMap; // core-js workaround, pre-v2.5.0
+    } catch (e) {}
+    return false;
+}
+
+function isWeakRef(x) {
+    if (!weakRefDeref || !x || typeof x !== 'object') {
+        return false;
+    }
+    try {
+        weakRefDeref.call(x);
+        return true;
+    } catch (e) {}
+    return false;
+}
+
+function isSet(x) {
+    if (!setSize || !x || typeof x !== 'object') {
+        return false;
+    }
+    try {
+        setSize.call(x);
+        try {
+            mapSize.call(x);
+        } catch (m) {
+            return true;
+        }
+        return x instanceof Set; // core-js workaround, pre-v2.5.0
+    } catch (e) {}
+    return false;
+}
+
+function isWeakSet(x) {
+    if (!weakSetHas || !x || typeof x !== 'object') {
+        return false;
+    }
+    try {
+        weakSetHas.call(x, weakSetHas);
+        try {
+            weakMapHas.call(x, weakMapHas);
+        } catch (s) {
+            return true;
+        }
+        return x instanceof WeakSet; // core-js workaround, pre-v2.5.0
+    } catch (e) {}
+    return false;
+}
+
+function isElement(x) {
+    if (!x || typeof x !== 'object') { return false; }
+    if (typeof HTMLElement !== 'undefined' && x instanceof HTMLElement) {
+        return true;
+    }
+    return typeof x.nodeName === 'string' && typeof x.getAttribute === 'function';
+}
+
+function inspectString(str, opts) {
+    if (str.length > opts.maxStringLength) {
+        var remaining = str.length - opts.maxStringLength;
+        var trailer = '... ' + remaining + ' more character' + (remaining > 1 ? 's' : '');
+        return inspectString($slice.call(str, 0, opts.maxStringLength), opts) + trailer;
+    }
+    // eslint-disable-next-line no-control-regex
+    var s = $replace.call($replace.call(str, /(['\\])/g, '\\$1'), /[\x00-\x1f]/g, lowbyte);
+    return wrapQuotes(s, 'single', opts);
+}
+
+function lowbyte(c) {
+    var n = c.charCodeAt(0);
+    var x = {
+        8: 'b',
+        9: 't',
+        10: 'n',
+        12: 'f',
+        13: 'r'
+    }[n];
+    if (x) { return '\\' + x; }
+    return '\\x' + (n < 0x10 ? '0' : '') + $toUpperCase.call(n.toString(16));
+}
+
+function markBoxed(str) {
+    return 'Object(' + str + ')';
+}
+
+function weakCollectionOf(type) {
+    return type + ' { ? }';
+}
+
+function collectionOf(type, size, entries, indent) {
+    var joinedEntries = indent ? indentedJoin(entries, indent) : $join.call(entries, ', ');
+    return type + ' (' + size + ') {' + joinedEntries + '}';
+}
+
+function singleLineValues(xs) {
+    for (var i = 0; i < xs.length; i++) {
+        if (indexOf(xs[i], '\n') >= 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function getIndent(opts, depth) {
+    var baseIndent;
+    if (opts.indent === '\t') {
+        baseIndent = '\t';
+    } else if (typeof opts.indent === 'number' && opts.indent > 0) {
+        baseIndent = $join.call(Array(opts.indent + 1), ' ');
+    } else {
+        return null;
+    }
+    return {
+        base: baseIndent,
+        prev: $join.call(Array(depth + 1), baseIndent)
+    };
+}
+
+function indentedJoin(xs, indent) {
+    if (xs.length === 0) { return ''; }
+    var lineJoiner = '\n' + indent.prev + indent.base;
+    return lineJoiner + $join.call(xs, ',' + lineJoiner) + '\n' + indent.prev;
+}
+
+function arrObjKeys(obj, inspect) {
+    var isArr = isArray(obj);
+    var xs = [];
+    if (isArr) {
+        xs.length = obj.length;
+        for (var i = 0; i < obj.length; i++) {
+            xs[i] = has(obj, i) ? inspect(obj[i], obj) : '';
+        }
+    }
+    var syms = typeof gOPS === 'function' ? gOPS(obj) : [];
+    var symMap;
+    if (hasShammedSymbols) {
+        symMap = {};
+        for (var k = 0; k < syms.length; k++) {
+            symMap['$' + syms[k]] = syms[k];
+        }
+    }
+
+    for (var key in obj) { // eslint-disable-line no-restricted-syntax
+        if (!has(obj, key)) { continue; } // eslint-disable-line no-restricted-syntax, no-continue
+        if (isArr && String(Number(key)) === key && key < obj.length) { continue; } // eslint-disable-line no-restricted-syntax, no-continue
+        if (hasShammedSymbols && symMap['$' + key] instanceof Symbol) {
+            // this is to prevent shammed Symbols, which are stored as strings, from being included in the string key section
+            continue; // eslint-disable-line no-restricted-syntax, no-continue
+        } else if ($test.call(/[^\w$]/, key)) {
+            xs.push(inspect(key, obj) + ': ' + inspect(obj[key], obj));
+        } else {
+            xs.push(key + ': ' + inspect(obj[key], obj));
+        }
+    }
+    if (typeof gOPS === 'function') {
+        for (var j = 0; j < syms.length; j++) {
+            if (isEnumerable.call(obj, syms[j])) {
+                xs.push('[' + inspect(syms[j]) + ']: ' + inspect(obj[syms[j]], obj));
+            }
+        }
+    }
+    return xs;
+}
+
+
+/***/ }),
+
+/***/ 7265:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+module.exports = __nccwpck_require__(3837).inspect;
+
+
+/***/ }),
+
 /***/ 1223:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
@@ -13164,6 +14268,1053 @@ function onceStrict (fn) {
   f.called = false
   return f
 }
+
+
+/***/ }),
+
+/***/ 4907:
+/***/ ((module) => {
+
+"use strict";
+
+
+var replace = String.prototype.replace;
+var percentTwenties = /%20/g;
+
+var Format = {
+    RFC1738: 'RFC1738',
+    RFC3986: 'RFC3986'
+};
+
+module.exports = {
+    'default': Format.RFC3986,
+    formatters: {
+        RFC1738: function (value) {
+            return replace.call(value, percentTwenties, '+');
+        },
+        RFC3986: function (value) {
+            return String(value);
+        }
+    },
+    RFC1738: Format.RFC1738,
+    RFC3986: Format.RFC3986
+};
+
+
+/***/ }),
+
+/***/ 2760:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+var stringify = __nccwpck_require__(9954);
+var parse = __nccwpck_require__(3912);
+var formats = __nccwpck_require__(4907);
+
+module.exports = {
+    formats: formats,
+    parse: parse,
+    stringify: stringify
+};
+
+
+/***/ }),
+
+/***/ 3912:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+var utils = __nccwpck_require__(2360);
+
+var has = Object.prototype.hasOwnProperty;
+var isArray = Array.isArray;
+
+var defaults = {
+    allowDots: false,
+    allowPrototypes: false,
+    allowSparse: false,
+    arrayLimit: 20,
+    charset: 'utf-8',
+    charsetSentinel: false,
+    comma: false,
+    decoder: utils.decode,
+    delimiter: '&',
+    depth: 5,
+    ignoreQueryPrefix: false,
+    interpretNumericEntities: false,
+    parameterLimit: 1000,
+    parseArrays: true,
+    plainObjects: false,
+    strictNullHandling: false
+};
+
+var interpretNumericEntities = function (str) {
+    return str.replace(/&#(\d+);/g, function ($0, numberStr) {
+        return String.fromCharCode(parseInt(numberStr, 10));
+    });
+};
+
+var parseArrayValue = function (val, options) {
+    if (val && typeof val === 'string' && options.comma && val.indexOf(',') > -1) {
+        return val.split(',');
+    }
+
+    return val;
+};
+
+// This is what browsers will submit when the ✓ character occurs in an
+// application/x-www-form-urlencoded body and the encoding of the page containing
+// the form is iso-8859-1, or when the submitted form has an accept-charset
+// attribute of iso-8859-1. Presumably also with other charsets that do not contain
+// the ✓ character, such as us-ascii.
+var isoSentinel = 'utf8=%26%2310003%3B'; // encodeURIComponent('&#10003;')
+
+// These are the percent-encoded utf-8 octets representing a checkmark, indicating that the request actually is utf-8 encoded.
+var charsetSentinel = 'utf8=%E2%9C%93'; // encodeURIComponent('✓')
+
+var parseValues = function parseQueryStringValues(str, options) {
+    var obj = {};
+    var cleanStr = options.ignoreQueryPrefix ? str.replace(/^\?/, '') : str;
+    var limit = options.parameterLimit === Infinity ? undefined : options.parameterLimit;
+    var parts = cleanStr.split(options.delimiter, limit);
+    var skipIndex = -1; // Keep track of where the utf8 sentinel was found
+    var i;
+
+    var charset = options.charset;
+    if (options.charsetSentinel) {
+        for (i = 0; i < parts.length; ++i) {
+            if (parts[i].indexOf('utf8=') === 0) {
+                if (parts[i] === charsetSentinel) {
+                    charset = 'utf-8';
+                } else if (parts[i] === isoSentinel) {
+                    charset = 'iso-8859-1';
+                }
+                skipIndex = i;
+                i = parts.length; // The eslint settings do not allow break;
+            }
+        }
+    }
+
+    for (i = 0; i < parts.length; ++i) {
+        if (i === skipIndex) {
+            continue;
+        }
+        var part = parts[i];
+
+        var bracketEqualsPos = part.indexOf(']=');
+        var pos = bracketEqualsPos === -1 ? part.indexOf('=') : bracketEqualsPos + 1;
+
+        var key, val;
+        if (pos === -1) {
+            key = options.decoder(part, defaults.decoder, charset, 'key');
+            val = options.strictNullHandling ? null : '';
+        } else {
+            key = options.decoder(part.slice(0, pos), defaults.decoder, charset, 'key');
+            val = utils.maybeMap(
+                parseArrayValue(part.slice(pos + 1), options),
+                function (encodedVal) {
+                    return options.decoder(encodedVal, defaults.decoder, charset, 'value');
+                }
+            );
+        }
+
+        if (val && options.interpretNumericEntities && charset === 'iso-8859-1') {
+            val = interpretNumericEntities(val);
+        }
+
+        if (part.indexOf('[]=') > -1) {
+            val = isArray(val) ? [val] : val;
+        }
+
+        if (has.call(obj, key)) {
+            obj[key] = utils.combine(obj[key], val);
+        } else {
+            obj[key] = val;
+        }
+    }
+
+    return obj;
+};
+
+var parseObject = function (chain, val, options, valuesParsed) {
+    var leaf = valuesParsed ? val : parseArrayValue(val, options);
+
+    for (var i = chain.length - 1; i >= 0; --i) {
+        var obj;
+        var root = chain[i];
+
+        if (root === '[]' && options.parseArrays) {
+            obj = [].concat(leaf);
+        } else {
+            obj = options.plainObjects ? Object.create(null) : {};
+            var cleanRoot = root.charAt(0) === '[' && root.charAt(root.length - 1) === ']' ? root.slice(1, -1) : root;
+            var index = parseInt(cleanRoot, 10);
+            if (!options.parseArrays && cleanRoot === '') {
+                obj = { 0: leaf };
+            } else if (
+                !isNaN(index)
+                && root !== cleanRoot
+                && String(index) === cleanRoot
+                && index >= 0
+                && (options.parseArrays && index <= options.arrayLimit)
+            ) {
+                obj = [];
+                obj[index] = leaf;
+            } else if (cleanRoot !== '__proto__') {
+                obj[cleanRoot] = leaf;
+            }
+        }
+
+        leaf = obj;
+    }
+
+    return leaf;
+};
+
+var parseKeys = function parseQueryStringKeys(givenKey, val, options, valuesParsed) {
+    if (!givenKey) {
+        return;
+    }
+
+    // Transform dot notation to bracket notation
+    var key = options.allowDots ? givenKey.replace(/\.([^.[]+)/g, '[$1]') : givenKey;
+
+    // The regex chunks
+
+    var brackets = /(\[[^[\]]*])/;
+    var child = /(\[[^[\]]*])/g;
+
+    // Get the parent
+
+    var segment = options.depth > 0 && brackets.exec(key);
+    var parent = segment ? key.slice(0, segment.index) : key;
+
+    // Stash the parent if it exists
+
+    var keys = [];
+    if (parent) {
+        // If we aren't using plain objects, optionally prefix keys that would overwrite object prototype properties
+        if (!options.plainObjects && has.call(Object.prototype, parent)) {
+            if (!options.allowPrototypes) {
+                return;
+            }
+        }
+
+        keys.push(parent);
+    }
+
+    // Loop through children appending to the array until we hit depth
+
+    var i = 0;
+    while (options.depth > 0 && (segment = child.exec(key)) !== null && i < options.depth) {
+        i += 1;
+        if (!options.plainObjects && has.call(Object.prototype, segment[1].slice(1, -1))) {
+            if (!options.allowPrototypes) {
+                return;
+            }
+        }
+        keys.push(segment[1]);
+    }
+
+    // If there's a remainder, just add whatever is left
+
+    if (segment) {
+        keys.push('[' + key.slice(segment.index) + ']');
+    }
+
+    return parseObject(keys, val, options, valuesParsed);
+};
+
+var normalizeParseOptions = function normalizeParseOptions(opts) {
+    if (!opts) {
+        return defaults;
+    }
+
+    if (opts.decoder !== null && opts.decoder !== undefined && typeof opts.decoder !== 'function') {
+        throw new TypeError('Decoder has to be a function.');
+    }
+
+    if (typeof opts.charset !== 'undefined' && opts.charset !== 'utf-8' && opts.charset !== 'iso-8859-1') {
+        throw new TypeError('The charset option must be either utf-8, iso-8859-1, or undefined');
+    }
+    var charset = typeof opts.charset === 'undefined' ? defaults.charset : opts.charset;
+
+    return {
+        allowDots: typeof opts.allowDots === 'undefined' ? defaults.allowDots : !!opts.allowDots,
+        allowPrototypes: typeof opts.allowPrototypes === 'boolean' ? opts.allowPrototypes : defaults.allowPrototypes,
+        allowSparse: typeof opts.allowSparse === 'boolean' ? opts.allowSparse : defaults.allowSparse,
+        arrayLimit: typeof opts.arrayLimit === 'number' ? opts.arrayLimit : defaults.arrayLimit,
+        charset: charset,
+        charsetSentinel: typeof opts.charsetSentinel === 'boolean' ? opts.charsetSentinel : defaults.charsetSentinel,
+        comma: typeof opts.comma === 'boolean' ? opts.comma : defaults.comma,
+        decoder: typeof opts.decoder === 'function' ? opts.decoder : defaults.decoder,
+        delimiter: typeof opts.delimiter === 'string' || utils.isRegExp(opts.delimiter) ? opts.delimiter : defaults.delimiter,
+        // eslint-disable-next-line no-implicit-coercion, no-extra-parens
+        depth: (typeof opts.depth === 'number' || opts.depth === false) ? +opts.depth : defaults.depth,
+        ignoreQueryPrefix: opts.ignoreQueryPrefix === true,
+        interpretNumericEntities: typeof opts.interpretNumericEntities === 'boolean' ? opts.interpretNumericEntities : defaults.interpretNumericEntities,
+        parameterLimit: typeof opts.parameterLimit === 'number' ? opts.parameterLimit : defaults.parameterLimit,
+        parseArrays: opts.parseArrays !== false,
+        plainObjects: typeof opts.plainObjects === 'boolean' ? opts.plainObjects : defaults.plainObjects,
+        strictNullHandling: typeof opts.strictNullHandling === 'boolean' ? opts.strictNullHandling : defaults.strictNullHandling
+    };
+};
+
+module.exports = function (str, opts) {
+    var options = normalizeParseOptions(opts);
+
+    if (str === '' || str === null || typeof str === 'undefined') {
+        return options.plainObjects ? Object.create(null) : {};
+    }
+
+    var tempObj = typeof str === 'string' ? parseValues(str, options) : str;
+    var obj = options.plainObjects ? Object.create(null) : {};
+
+    // Iterate over the keys and setup the new object
+
+    var keys = Object.keys(tempObj);
+    for (var i = 0; i < keys.length; ++i) {
+        var key = keys[i];
+        var newObj = parseKeys(key, tempObj[key], options, typeof str === 'string');
+        obj = utils.merge(obj, newObj, options);
+    }
+
+    if (options.allowSparse === true) {
+        return obj;
+    }
+
+    return utils.compact(obj);
+};
+
+
+/***/ }),
+
+/***/ 9954:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+var getSideChannel = __nccwpck_require__(4547);
+var utils = __nccwpck_require__(2360);
+var formats = __nccwpck_require__(4907);
+var has = Object.prototype.hasOwnProperty;
+
+var arrayPrefixGenerators = {
+    brackets: function brackets(prefix) {
+        return prefix + '[]';
+    },
+    comma: 'comma',
+    indices: function indices(prefix, key) {
+        return prefix + '[' + key + ']';
+    },
+    repeat: function repeat(prefix) {
+        return prefix;
+    }
+};
+
+var isArray = Array.isArray;
+var split = String.prototype.split;
+var push = Array.prototype.push;
+var pushToArray = function (arr, valueOrArray) {
+    push.apply(arr, isArray(valueOrArray) ? valueOrArray : [valueOrArray]);
+};
+
+var toISO = Date.prototype.toISOString;
+
+var defaultFormat = formats['default'];
+var defaults = {
+    addQueryPrefix: false,
+    allowDots: false,
+    charset: 'utf-8',
+    charsetSentinel: false,
+    delimiter: '&',
+    encode: true,
+    encoder: utils.encode,
+    encodeValuesOnly: false,
+    format: defaultFormat,
+    formatter: formats.formatters[defaultFormat],
+    // deprecated
+    indices: false,
+    serializeDate: function serializeDate(date) {
+        return toISO.call(date);
+    },
+    skipNulls: false,
+    strictNullHandling: false
+};
+
+var isNonNullishPrimitive = function isNonNullishPrimitive(v) {
+    return typeof v === 'string'
+        || typeof v === 'number'
+        || typeof v === 'boolean'
+        || typeof v === 'symbol'
+        || typeof v === 'bigint';
+};
+
+var sentinel = {};
+
+var stringify = function stringify(
+    object,
+    prefix,
+    generateArrayPrefix,
+    commaRoundTrip,
+    strictNullHandling,
+    skipNulls,
+    encoder,
+    filter,
+    sort,
+    allowDots,
+    serializeDate,
+    format,
+    formatter,
+    encodeValuesOnly,
+    charset,
+    sideChannel
+) {
+    var obj = object;
+
+    var tmpSc = sideChannel;
+    var step = 0;
+    var findFlag = false;
+    while ((tmpSc = tmpSc.get(sentinel)) !== void undefined && !findFlag) {
+        // Where object last appeared in the ref tree
+        var pos = tmpSc.get(object);
+        step += 1;
+        if (typeof pos !== 'undefined') {
+            if (pos === step) {
+                throw new RangeError('Cyclic object value');
+            } else {
+                findFlag = true; // Break while
+            }
+        }
+        if (typeof tmpSc.get(sentinel) === 'undefined') {
+            step = 0;
+        }
+    }
+
+    if (typeof filter === 'function') {
+        obj = filter(prefix, obj);
+    } else if (obj instanceof Date) {
+        obj = serializeDate(obj);
+    } else if (generateArrayPrefix === 'comma' && isArray(obj)) {
+        obj = utils.maybeMap(obj, function (value) {
+            if (value instanceof Date) {
+                return serializeDate(value);
+            }
+            return value;
+        });
+    }
+
+    if (obj === null) {
+        if (strictNullHandling) {
+            return encoder && !encodeValuesOnly ? encoder(prefix, defaults.encoder, charset, 'key', format) : prefix;
+        }
+
+        obj = '';
+    }
+
+    if (isNonNullishPrimitive(obj) || utils.isBuffer(obj)) {
+        if (encoder) {
+            var keyValue = encodeValuesOnly ? prefix : encoder(prefix, defaults.encoder, charset, 'key', format);
+            if (generateArrayPrefix === 'comma' && encodeValuesOnly) {
+                var valuesArray = split.call(String(obj), ',');
+                var valuesJoined = '';
+                for (var i = 0; i < valuesArray.length; ++i) {
+                    valuesJoined += (i === 0 ? '' : ',') + formatter(encoder(valuesArray[i], defaults.encoder, charset, 'value', format));
+                }
+                return [formatter(keyValue) + (commaRoundTrip && isArray(obj) && valuesArray.length === 1 ? '[]' : '') + '=' + valuesJoined];
+            }
+            return [formatter(keyValue) + '=' + formatter(encoder(obj, defaults.encoder, charset, 'value', format))];
+        }
+        return [formatter(prefix) + '=' + formatter(String(obj))];
+    }
+
+    var values = [];
+
+    if (typeof obj === 'undefined') {
+        return values;
+    }
+
+    var objKeys;
+    if (generateArrayPrefix === 'comma' && isArray(obj)) {
+        // we need to join elements in
+        objKeys = [{ value: obj.length > 0 ? obj.join(',') || null : void undefined }];
+    } else if (isArray(filter)) {
+        objKeys = filter;
+    } else {
+        var keys = Object.keys(obj);
+        objKeys = sort ? keys.sort(sort) : keys;
+    }
+
+    var adjustedPrefix = commaRoundTrip && isArray(obj) && obj.length === 1 ? prefix + '[]' : prefix;
+
+    for (var j = 0; j < objKeys.length; ++j) {
+        var key = objKeys[j];
+        var value = typeof key === 'object' && typeof key.value !== 'undefined' ? key.value : obj[key];
+
+        if (skipNulls && value === null) {
+            continue;
+        }
+
+        var keyPrefix = isArray(obj)
+            ? typeof generateArrayPrefix === 'function' ? generateArrayPrefix(adjustedPrefix, key) : adjustedPrefix
+            : adjustedPrefix + (allowDots ? '.' + key : '[' + key + ']');
+
+        sideChannel.set(object, step);
+        var valueSideChannel = getSideChannel();
+        valueSideChannel.set(sentinel, sideChannel);
+        pushToArray(values, stringify(
+            value,
+            keyPrefix,
+            generateArrayPrefix,
+            commaRoundTrip,
+            strictNullHandling,
+            skipNulls,
+            encoder,
+            filter,
+            sort,
+            allowDots,
+            serializeDate,
+            format,
+            formatter,
+            encodeValuesOnly,
+            charset,
+            valueSideChannel
+        ));
+    }
+
+    return values;
+};
+
+var normalizeStringifyOptions = function normalizeStringifyOptions(opts) {
+    if (!opts) {
+        return defaults;
+    }
+
+    if (opts.encoder !== null && typeof opts.encoder !== 'undefined' && typeof opts.encoder !== 'function') {
+        throw new TypeError('Encoder has to be a function.');
+    }
+
+    var charset = opts.charset || defaults.charset;
+    if (typeof opts.charset !== 'undefined' && opts.charset !== 'utf-8' && opts.charset !== 'iso-8859-1') {
+        throw new TypeError('The charset option must be either utf-8, iso-8859-1, or undefined');
+    }
+
+    var format = formats['default'];
+    if (typeof opts.format !== 'undefined') {
+        if (!has.call(formats.formatters, opts.format)) {
+            throw new TypeError('Unknown format option provided.');
+        }
+        format = opts.format;
+    }
+    var formatter = formats.formatters[format];
+
+    var filter = defaults.filter;
+    if (typeof opts.filter === 'function' || isArray(opts.filter)) {
+        filter = opts.filter;
+    }
+
+    return {
+        addQueryPrefix: typeof opts.addQueryPrefix === 'boolean' ? opts.addQueryPrefix : defaults.addQueryPrefix,
+        allowDots: typeof opts.allowDots === 'undefined' ? defaults.allowDots : !!opts.allowDots,
+        charset: charset,
+        charsetSentinel: typeof opts.charsetSentinel === 'boolean' ? opts.charsetSentinel : defaults.charsetSentinel,
+        delimiter: typeof opts.delimiter === 'undefined' ? defaults.delimiter : opts.delimiter,
+        encode: typeof opts.encode === 'boolean' ? opts.encode : defaults.encode,
+        encoder: typeof opts.encoder === 'function' ? opts.encoder : defaults.encoder,
+        encodeValuesOnly: typeof opts.encodeValuesOnly === 'boolean' ? opts.encodeValuesOnly : defaults.encodeValuesOnly,
+        filter: filter,
+        format: format,
+        formatter: formatter,
+        serializeDate: typeof opts.serializeDate === 'function' ? opts.serializeDate : defaults.serializeDate,
+        skipNulls: typeof opts.skipNulls === 'boolean' ? opts.skipNulls : defaults.skipNulls,
+        sort: typeof opts.sort === 'function' ? opts.sort : null,
+        strictNullHandling: typeof opts.strictNullHandling === 'boolean' ? opts.strictNullHandling : defaults.strictNullHandling
+    };
+};
+
+module.exports = function (object, opts) {
+    var obj = object;
+    var options = normalizeStringifyOptions(opts);
+
+    var objKeys;
+    var filter;
+
+    if (typeof options.filter === 'function') {
+        filter = options.filter;
+        obj = filter('', obj);
+    } else if (isArray(options.filter)) {
+        filter = options.filter;
+        objKeys = filter;
+    }
+
+    var keys = [];
+
+    if (typeof obj !== 'object' || obj === null) {
+        return '';
+    }
+
+    var arrayFormat;
+    if (opts && opts.arrayFormat in arrayPrefixGenerators) {
+        arrayFormat = opts.arrayFormat;
+    } else if (opts && 'indices' in opts) {
+        arrayFormat = opts.indices ? 'indices' : 'repeat';
+    } else {
+        arrayFormat = 'indices';
+    }
+
+    var generateArrayPrefix = arrayPrefixGenerators[arrayFormat];
+    if (opts && 'commaRoundTrip' in opts && typeof opts.commaRoundTrip !== 'boolean') {
+        throw new TypeError('`commaRoundTrip` must be a boolean, or absent');
+    }
+    var commaRoundTrip = generateArrayPrefix === 'comma' && opts && opts.commaRoundTrip;
+
+    if (!objKeys) {
+        objKeys = Object.keys(obj);
+    }
+
+    if (options.sort) {
+        objKeys.sort(options.sort);
+    }
+
+    var sideChannel = getSideChannel();
+    for (var i = 0; i < objKeys.length; ++i) {
+        var key = objKeys[i];
+
+        if (options.skipNulls && obj[key] === null) {
+            continue;
+        }
+        pushToArray(keys, stringify(
+            obj[key],
+            key,
+            generateArrayPrefix,
+            commaRoundTrip,
+            options.strictNullHandling,
+            options.skipNulls,
+            options.encode ? options.encoder : null,
+            options.filter,
+            options.sort,
+            options.allowDots,
+            options.serializeDate,
+            options.format,
+            options.formatter,
+            options.encodeValuesOnly,
+            options.charset,
+            sideChannel
+        ));
+    }
+
+    var joined = keys.join(options.delimiter);
+    var prefix = options.addQueryPrefix === true ? '?' : '';
+
+    if (options.charsetSentinel) {
+        if (options.charset === 'iso-8859-1') {
+            // encodeURIComponent('&#10003;'), the "numeric entity" representation of a checkmark
+            prefix += 'utf8=%26%2310003%3B&';
+        } else {
+            // encodeURIComponent('✓')
+            prefix += 'utf8=%E2%9C%93&';
+        }
+    }
+
+    return joined.length > 0 ? prefix + joined : '';
+};
+
+
+/***/ }),
+
+/***/ 2360:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+var formats = __nccwpck_require__(4907);
+
+var has = Object.prototype.hasOwnProperty;
+var isArray = Array.isArray;
+
+var hexTable = (function () {
+    var array = [];
+    for (var i = 0; i < 256; ++i) {
+        array.push('%' + ((i < 16 ? '0' : '') + i.toString(16)).toUpperCase());
+    }
+
+    return array;
+}());
+
+var compactQueue = function compactQueue(queue) {
+    while (queue.length > 1) {
+        var item = queue.pop();
+        var obj = item.obj[item.prop];
+
+        if (isArray(obj)) {
+            var compacted = [];
+
+            for (var j = 0; j < obj.length; ++j) {
+                if (typeof obj[j] !== 'undefined') {
+                    compacted.push(obj[j]);
+                }
+            }
+
+            item.obj[item.prop] = compacted;
+        }
+    }
+};
+
+var arrayToObject = function arrayToObject(source, options) {
+    var obj = options && options.plainObjects ? Object.create(null) : {};
+    for (var i = 0; i < source.length; ++i) {
+        if (typeof source[i] !== 'undefined') {
+            obj[i] = source[i];
+        }
+    }
+
+    return obj;
+};
+
+var merge = function merge(target, source, options) {
+    /* eslint no-param-reassign: 0 */
+    if (!source) {
+        return target;
+    }
+
+    if (typeof source !== 'object') {
+        if (isArray(target)) {
+            target.push(source);
+        } else if (target && typeof target === 'object') {
+            if ((options && (options.plainObjects || options.allowPrototypes)) || !has.call(Object.prototype, source)) {
+                target[source] = true;
+            }
+        } else {
+            return [target, source];
+        }
+
+        return target;
+    }
+
+    if (!target || typeof target !== 'object') {
+        return [target].concat(source);
+    }
+
+    var mergeTarget = target;
+    if (isArray(target) && !isArray(source)) {
+        mergeTarget = arrayToObject(target, options);
+    }
+
+    if (isArray(target) && isArray(source)) {
+        source.forEach(function (item, i) {
+            if (has.call(target, i)) {
+                var targetItem = target[i];
+                if (targetItem && typeof targetItem === 'object' && item && typeof item === 'object') {
+                    target[i] = merge(targetItem, item, options);
+                } else {
+                    target.push(item);
+                }
+            } else {
+                target[i] = item;
+            }
+        });
+        return target;
+    }
+
+    return Object.keys(source).reduce(function (acc, key) {
+        var value = source[key];
+
+        if (has.call(acc, key)) {
+            acc[key] = merge(acc[key], value, options);
+        } else {
+            acc[key] = value;
+        }
+        return acc;
+    }, mergeTarget);
+};
+
+var assign = function assignSingleSource(target, source) {
+    return Object.keys(source).reduce(function (acc, key) {
+        acc[key] = source[key];
+        return acc;
+    }, target);
+};
+
+var decode = function (str, decoder, charset) {
+    var strWithoutPlus = str.replace(/\+/g, ' ');
+    if (charset === 'iso-8859-1') {
+        // unescape never throws, no try...catch needed:
+        return strWithoutPlus.replace(/%[0-9a-f]{2}/gi, unescape);
+    }
+    // utf-8
+    try {
+        return decodeURIComponent(strWithoutPlus);
+    } catch (e) {
+        return strWithoutPlus;
+    }
+};
+
+var encode = function encode(str, defaultEncoder, charset, kind, format) {
+    // This code was originally written by Brian White (mscdex) for the io.js core querystring library.
+    // It has been adapted here for stricter adherence to RFC 3986
+    if (str.length === 0) {
+        return str;
+    }
+
+    var string = str;
+    if (typeof str === 'symbol') {
+        string = Symbol.prototype.toString.call(str);
+    } else if (typeof str !== 'string') {
+        string = String(str);
+    }
+
+    if (charset === 'iso-8859-1') {
+        return escape(string).replace(/%u[0-9a-f]{4}/gi, function ($0) {
+            return '%26%23' + parseInt($0.slice(2), 16) + '%3B';
+        });
+    }
+
+    var out = '';
+    for (var i = 0; i < string.length; ++i) {
+        var c = string.charCodeAt(i);
+
+        if (
+            c === 0x2D // -
+            || c === 0x2E // .
+            || c === 0x5F // _
+            || c === 0x7E // ~
+            || (c >= 0x30 && c <= 0x39) // 0-9
+            || (c >= 0x41 && c <= 0x5A) // a-z
+            || (c >= 0x61 && c <= 0x7A) // A-Z
+            || (format === formats.RFC1738 && (c === 0x28 || c === 0x29)) // ( )
+        ) {
+            out += string.charAt(i);
+            continue;
+        }
+
+        if (c < 0x80) {
+            out = out + hexTable[c];
+            continue;
+        }
+
+        if (c < 0x800) {
+            out = out + (hexTable[0xC0 | (c >> 6)] + hexTable[0x80 | (c & 0x3F)]);
+            continue;
+        }
+
+        if (c < 0xD800 || c >= 0xE000) {
+            out = out + (hexTable[0xE0 | (c >> 12)] + hexTable[0x80 | ((c >> 6) & 0x3F)] + hexTable[0x80 | (c & 0x3F)]);
+            continue;
+        }
+
+        i += 1;
+        c = 0x10000 + (((c & 0x3FF) << 10) | (string.charCodeAt(i) & 0x3FF));
+        /* eslint operator-linebreak: [2, "before"] */
+        out += hexTable[0xF0 | (c >> 18)]
+            + hexTable[0x80 | ((c >> 12) & 0x3F)]
+            + hexTable[0x80 | ((c >> 6) & 0x3F)]
+            + hexTable[0x80 | (c & 0x3F)];
+    }
+
+    return out;
+};
+
+var compact = function compact(value) {
+    var queue = [{ obj: { o: value }, prop: 'o' }];
+    var refs = [];
+
+    for (var i = 0; i < queue.length; ++i) {
+        var item = queue[i];
+        var obj = item.obj[item.prop];
+
+        var keys = Object.keys(obj);
+        for (var j = 0; j < keys.length; ++j) {
+            var key = keys[j];
+            var val = obj[key];
+            if (typeof val === 'object' && val !== null && refs.indexOf(val) === -1) {
+                queue.push({ obj: obj, prop: key });
+                refs.push(val);
+            }
+        }
+    }
+
+    compactQueue(queue);
+
+    return value;
+};
+
+var isRegExp = function isRegExp(obj) {
+    return Object.prototype.toString.call(obj) === '[object RegExp]';
+};
+
+var isBuffer = function isBuffer(obj) {
+    if (!obj || typeof obj !== 'object') {
+        return false;
+    }
+
+    return !!(obj.constructor && obj.constructor.isBuffer && obj.constructor.isBuffer(obj));
+};
+
+var combine = function combine(a, b) {
+    return [].concat(a, b);
+};
+
+var maybeMap = function maybeMap(val, fn) {
+    if (isArray(val)) {
+        var mapped = [];
+        for (var i = 0; i < val.length; i += 1) {
+            mapped.push(fn(val[i]));
+        }
+        return mapped;
+    }
+    return fn(val);
+};
+
+module.exports = {
+    arrayToObject: arrayToObject,
+    assign: assign,
+    combine: combine,
+    compact: compact,
+    decode: decode,
+    encode: encode,
+    isBuffer: isBuffer,
+    isRegExp: isRegExp,
+    maybeMap: maybeMap,
+    merge: merge
+};
+
+
+/***/ }),
+
+/***/ 4547:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+var GetIntrinsic = __nccwpck_require__(4538);
+var callBound = __nccwpck_require__(8803);
+var inspect = __nccwpck_require__(504);
+
+var $TypeError = GetIntrinsic('%TypeError%');
+var $WeakMap = GetIntrinsic('%WeakMap%', true);
+var $Map = GetIntrinsic('%Map%', true);
+
+var $weakMapGet = callBound('WeakMap.prototype.get', true);
+var $weakMapSet = callBound('WeakMap.prototype.set', true);
+var $weakMapHas = callBound('WeakMap.prototype.has', true);
+var $mapGet = callBound('Map.prototype.get', true);
+var $mapSet = callBound('Map.prototype.set', true);
+var $mapHas = callBound('Map.prototype.has', true);
+
+/*
+ * This function traverses the list returning the node corresponding to the
+ * given key.
+ *
+ * That node is also moved to the head of the list, so that if it's accessed
+ * again we don't need to traverse the whole list. By doing so, all the recently
+ * used nodes can be accessed relatively quickly.
+ */
+var listGetNode = function (list, key) { // eslint-disable-line consistent-return
+	for (var prev = list, curr; (curr = prev.next) !== null; prev = curr) {
+		if (curr.key === key) {
+			prev.next = curr.next;
+			curr.next = list.next;
+			list.next = curr; // eslint-disable-line no-param-reassign
+			return curr;
+		}
+	}
+};
+
+var listGet = function (objects, key) {
+	var node = listGetNode(objects, key);
+	return node && node.value;
+};
+var listSet = function (objects, key, value) {
+	var node = listGetNode(objects, key);
+	if (node) {
+		node.value = value;
+	} else {
+		// Prepend the new node to the beginning of the list
+		objects.next = { // eslint-disable-line no-param-reassign
+			key: key,
+			next: objects.next,
+			value: value
+		};
+	}
+};
+var listHas = function (objects, key) {
+	return !!listGetNode(objects, key);
+};
+
+module.exports = function getSideChannel() {
+	var $wm;
+	var $m;
+	var $o;
+	var channel = {
+		assert: function (key) {
+			if (!channel.has(key)) {
+				throw new $TypeError('Side channel does not contain ' + inspect(key));
+			}
+		},
+		get: function (key) { // eslint-disable-line consistent-return
+			if ($WeakMap && key && (typeof key === 'object' || typeof key === 'function')) {
+				if ($wm) {
+					return $weakMapGet($wm, key);
+				}
+			} else if ($Map) {
+				if ($m) {
+					return $mapGet($m, key);
+				}
+			} else {
+				if ($o) { // eslint-disable-line no-lonely-if
+					return listGet($o, key);
+				}
+			}
+		},
+		has: function (key) {
+			if ($WeakMap && key && (typeof key === 'object' || typeof key === 'function')) {
+				if ($wm) {
+					return $weakMapHas($wm, key);
+				}
+			} else if ($Map) {
+				if ($m) {
+					return $mapHas($m, key);
+				}
+			} else {
+				if ($o) { // eslint-disable-line no-lonely-if
+					return listHas($o, key);
+				}
+			}
+			return false;
+		},
+		set: function (key, value) {
+			if ($WeakMap && key && (typeof key === 'object' || typeof key === 'function')) {
+				if (!$wm) {
+					$wm = new $WeakMap();
+				}
+				$weakMapSet($wm, key, value);
+			} else if ($Map) {
+				if (!$m) {
+					$m = new $Map();
+				}
+				$mapSet($m, key, value);
+			} else {
+				if (!$o) {
+					/*
+					 * Initialize the linked list as an empty node, so that we don't have
+					 * to special-case handling of the first node: we can always refer to
+					 * it as (previous node).next, instead of something like (list).head
+					 */
+					$o = { key: {}, next: null };
+				}
+				listSet($o, key, value);
+			}
+		}
+	};
+	return channel;
+};
 
 
 /***/ }),
@@ -15819,73 +17970,1959 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
+/***/ 8999:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+/* tslint:disable */
+/* eslint-disable */
+// Generated using typescript-generator version 2.36.1070 on 2022-12-01 11:18:32.
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.ProjectTypeCount = exports.UserSession = exports.TokenAuthInput = exports.ProjectTypeInput = exports.ProjectType = exports.DeploymentNameValidationRequest = exports.ProjectPatch = exports.UpgradeInformation = exports.ProjectDeleteOperation = exports.Project = exports.ProjectInput = exports.Installation = exports.InstallationInput = exports.FrameworkDefinition = exports.FrameworkDefinitionInput = exports.DetectionInput = exports.TemplateFile = exports.TemplateFileCompletionInput = exports.BuildStep = exports.BuildStepCompletionInput = exports.DeploymentStateInput = exports.DeploymentPatch = exports.PhpMyAdminSession = exports.DirectorySessionToken = exports.Deployment = exports.DeploymentInput = exports.ConnectDomainInput = exports.DeploymentTriggerInput = exports.BranchPatch = exports.BuildLog = exports.Branch = exports.BranchDeleteOperation = exports.ArtifactUpload = exports.ArtifactUploadInput = exports.ArtifactDownload = exports.AccountInfo = exports.ProjectNameValidationRequest = exports.Account = exports.AccountPatch = exports.UpsellInformation = exports.DetailedAccount = exports.DisconnectDomains = exports.FeedbackInput = exports.DeploymentChange = exports.UserCreate = exports.TokenChange = exports.ProjectChange = exports.InstallationChange = exports.ContractChange = exports.BranchChange = void 0;
+exports.Webspace = exports.BuildStepLog = exports.GitHubConnection = exports.Token = exports.VisitorStatisticsEnabledPatch = exports.DefaultPhpVersionPatch = exports.ProjectTypePatch = exports.AutomaticDeploymentEnabledPatch = exports.ProjectNamePatch = exports.ProjectOverview = exports.DatabaseSettings = exports.GitRepository = exports.DestinationRepositoryInput = exports.DeployStepInput = exports.TemplateStepInput = exports.BuildStepInput = exports.TemplateFileCompletionDescription = exports.BuildStepDescription = exports.GithubRepository = exports.GithubIdentity = exports.Supported = exports.TemplateFileDefinition = exports.SupportedInput = exports.DeployStepDefinition = exports.BuildStepDefinition = exports.DetectionResult = exports.BuildTool = exports.Runtime = exports.DeploymentNamePatch = exports.DeploymentPhpVersionPatch = exports.DeploymentOverview = exports.DetailedDatabase = exports.DetailedWebspace = exports.DeploymentDomain = exports.DetailedDeploymentState = exports.CronJob = exports.PhpVersionPatch = exports.BranchBuild = exports.BuildJobLog = exports.BranchOverview = exports.BranchDeploymentState = exports.BranchBuildState = exports.CompletedPart = exports.UnusableAccount = exports.FeedbackTileShownPatch = exports.WelcomeShownPatch = exports.Domain = exports.DetailedAccountOverview = exports.Page = exports.SortField = void 0;
+exports.WebspaceState = exports.DeploymentState = exports.BranchDeploymentStateType = exports.BuildState = exports.DomainType = exports.AppAccessType = exports.Feature = exports.FrameworkType = exports.DeploymentChangeType = exports.ProviderType = exports.TokenChangeType = exports.ProjectChangeType = exports.InstallationChangeType = exports.ContractChangeType = exports.BranchChangeType = exports.IonosSpaceDeploymentApiClient = exports.IonosSpaceGithubApiClient = exports.IonosSpaceProjectTypesApiClient = exports.IonosSpaceArtifactApiClient = exports.IonosSpaceGithubWebhookApiClient = exports.IonosSpaceMetadataApiClient = exports.IonosSpaceAccountApiClient = exports.IonosSpaceDetectionApiClient = exports.IonosSpaceBranchApiClient = exports.IonosSpaceEventsApiClient = exports.IonosSpaceProjectApiClient = exports.IonosSpaceFrameworkApiClient = exports.IonosSpaceAccountInfoApiClient = exports.IonosSpaceTokensApiClient = exports.IonosSpaceUserSessionApiClient = exports.RemoteCommands = exports.FrameworkIdentifier = exports.DatabaseQuota = exports.WebspaceQuota = exports.DeploymentConfigurationInput = exports.TemplateFileInput = exports.VariableInput = exports.DeploymentConfiguration = exports.Variable = exports.LanguageDetection = exports.FileDetection = exports.FileContentDetection = exports.DependencyDetection = exports.DeployStep = exports.TemplateStep = exports.DetectionBase = exports.GithubRepositoryInput = exports.DatabaseOverview = exports.WebspaceOverview = exports.Database = void 0;
+exports.AxiosIonosSpaceDeploymentApiClient = exports.AxiosIonosSpaceGithubApiClient = exports.AxiosIonosSpaceProjectTypesApiClient = exports.AxiosIonosSpaceArtifactApiClient = exports.AxiosIonosSpaceGithubWebhookApiClient = exports.AxiosIonosSpaceMetadataApiClient = exports.AxiosIonosSpaceAccountApiClient = exports.AxiosIonosSpaceDetectionApiClient = exports.AxiosIonosSpaceBranchApiClient = exports.AxiosIonosSpaceEventsApiClient = exports.AxiosIonosSpaceProjectApiClient = exports.AxiosIonosSpaceFrameworkApiClient = exports.AxiosIonosSpaceAccountInfoApiClient = exports.AxiosIonosSpaceTokensApiClient = exports.AxiosIonosSpaceUserSessionApiClient = exports.DetectionBaseType = exports.GithubIdentityType = exports.Type = exports.DatabaseState = void 0;
+class BranchChange {
+    constructor(data) {
+        this.occurrenceDate = data.occurrenceDate;
+        this.type = data.type;
+        this.projectId = data.projectId;
+        this.branchId = data.branchId;
+    }
+}
+exports.BranchChange = BranchChange;
+class ContractChange {
+    constructor(data) {
+        this.occurrenceDate = data.occurrenceDate;
+        this.type = data.type;
+    }
+}
+exports.ContractChange = ContractChange;
+class InstallationChange {
+    constructor(data) {
+        this.occurrenceDate = data.occurrenceDate;
+        this.type = data.type;
+        this.installationId = data.installationId;
+    }
+}
+exports.InstallationChange = InstallationChange;
+class ProjectChange {
+    constructor(data) {
+        this.occurrenceDate = data.occurrenceDate;
+        this.type = data.type;
+        this.projectId = data.projectId;
+    }
+}
+exports.ProjectChange = ProjectChange;
+class TokenChange {
+    constructor(data) {
+        this.occurrenceDate = data.occurrenceDate;
+        this.type = data.type;
+        this.providerType = data.providerType;
+    }
+}
+exports.TokenChange = TokenChange;
+class UserCreate {
+    constructor(data) {
+        this.occurrenceDate = data.occurrenceDate;
+        this.id = data.id;
+        this.username = data.username;
+        this.expiryDate = data.expiryDate;
+    }
+}
+exports.UserCreate = UserCreate;
+class DeploymentChange {
+    constructor(data) {
+        this.occurrenceDate = data.occurrenceDate;
+        this.type = data.type;
+        this.projectId = data.projectId;
+        this.branchId = data.branchId;
+        this.deploymentId = data.deploymentId;
+    }
+}
+exports.DeploymentChange = DeploymentChange;
+class FeedbackInput {
+    constructor(data) {
+        this.type = data.type;
+        this.description = data.description;
+        this.summary = data.summary;
+        this.errorId = data.errorId;
+        this.affectedProjectId = data.affectedProjectId;
+        this.supportUserInvited = data.supportUserInvited;
+    }
+}
+exports.FeedbackInput = FeedbackInput;
+class DisconnectDomains {
+    constructor(data) {
+        this.domains = data.domains;
+    }
+}
+exports.DisconnectDomains = DisconnectDomains;
+class DetailedAccount {
+    constructor(data) {
+        this.id = data.id;
+        this.projectTypes = data.projectTypes;
+        this.provisioningId = data.provisioningId;
+        this.stackInstanceId = data.stackInstanceId;
+        this.market = data.market;
+        this.wa3Id = data.wa3Id;
+        this.softLockedDate = data.softLockedDate;
+        this.hardLockedDate = data.hardLockedDate;
+        this.deletedDate = data.deletedDate;
+        this.gitConnections = data.gitConnections;
+        this.createdDate = data.createdDate;
+        this.lastChangedDate = data.lastChangedDate;
+    }
+}
+exports.DetailedAccount = DetailedAccount;
+class UpsellInformation {
+    constructor(data) {
+        this.contractId = data.contractId;
+        this.projectTypeShopLinks = data.projectTypeShopLinks;
+    }
+}
+exports.UpsellInformation = UpsellInformation;
+class AccountPatch {
+    constructor(data) {
+        this.welcomeShownPatch = data.welcomeShownPatch;
+        this.feedbackTileShownPatch = data.feedbackTileShownPatch;
+    }
+}
+exports.AccountPatch = AccountPatch;
+class Account {
+    constructor(data) {
+        this.projectTypes = data.projectTypes;
+        this.showWelcome = data.showWelcome;
+        this.showFeedbackTile = data.showFeedbackTile;
+        this.gitConnections = data.gitConnections;
+    }
+}
+exports.Account = Account;
+class ProjectNameValidationRequest {
+    constructor(data) {
+        this.projectName = data.projectName;
+    }
+}
+exports.ProjectNameValidationRequest = ProjectNameValidationRequest;
+class AccountInfo {
+    constructor(data) {
+        this.usableAccount = data.usableAccount;
+        this.unusableAccounts = data.unusableAccounts;
+    }
+}
+exports.AccountInfo = AccountInfo;
+class ArtifactDownload {
+    constructor(data) {
+        this.url = data.url;
+    }
+}
+exports.ArtifactDownload = ArtifactDownload;
+class ArtifactUploadInput {
+    constructor(data) {
+        this.size = data.size;
+    }
+}
+exports.ArtifactUploadInput = ArtifactUploadInput;
+class ArtifactUpload {
+    constructor(data) {
+        this.urls = data.urls;
+    }
+}
+exports.ArtifactUpload = ArtifactUpload;
+class BranchDeleteOperation {
+    constructor(data) {
+        this.deleteRemoteBranch = data.deleteRemoteBranch;
+    }
+}
+exports.BranchDeleteOperation = BranchDeleteOperation;
+class Branch {
+    constructor(data) {
+        this.name = data.name;
+        this.id = data.id;
+        this.productionBranch = data.productionBranch;
+        this.webUrl = data.webUrl;
+        this.workflowPresent = data.workflowPresent;
+        this.deprecatedWorkflow = data.deprecatedWorkflow;
+        this.deleted = data.deleted;
+        this.deploymentCount = data.deploymentCount;
+        this.buildState = data.buildState;
+        this.deploymentState = data.deploymentState;
+    }
+}
+exports.Branch = Branch;
+class BuildLog {
+    constructor(data) {
+        this.jobs = data.jobs;
+    }
+}
+exports.BuildLog = BuildLog;
+class BranchPatch {
+    constructor(data) {
+        this.phpVersionPatch = data.phpVersionPatch;
+    }
+}
+exports.BranchPatch = BranchPatch;
+class DeploymentTriggerInput {
+    constructor(data) {
+        this.version = data.version;
+        this.onlyFailed = data.onlyFailed;
+    }
+}
+exports.DeploymentTriggerInput = DeploymentTriggerInput;
+class ConnectDomainInput {
+    constructor(data) {
+        this.domain = data.domain;
+        this.force = data.force;
+    }
+}
+exports.ConnectDomainInput = ConnectDomainInput;
+class DeploymentInput {
+    constructor(data) {
+        this.name = data.name;
+        this.domain = data.domain;
+    }
+}
+exports.DeploymentInput = DeploymentInput;
+class Deployment {
+    constructor(data) {
+        this.name = data.name;
+        this.id = data.id;
+        this.state = data.state;
+        this.domain = data.domain;
+        this.webspace = data.webspace;
+        this.database = data.database;
+    }
+}
+exports.Deployment = Deployment;
+class DirectorySessionToken {
+    constructor(data) {
+        this.sessionId = data.sessionId;
+        this.expireAt = data.expireAt;
+    }
+}
+exports.DirectorySessionToken = DirectorySessionToken;
+class PhpMyAdminSession {
+    constructor(data) {
+        this.url = data.url;
+        this.expireAt = data.expireAt;
+    }
+}
+exports.PhpMyAdminSession = PhpMyAdminSession;
+class DeploymentPatch {
+    constructor(data) {
+        this.phpVersionPatch = data.phpVersionPatch;
+        this.namePatch = data.namePatch;
+    }
+}
+exports.DeploymentPatch = DeploymentPatch;
+class DeploymentStateInput {
+    constructor(data) {
+        this.state = data.state;
+        this.externalId = data.externalId;
+    }
+}
+exports.DeploymentStateInput = DeploymentStateInput;
+class BuildStepCompletionInput {
+    constructor(data) {
+        this.repository = data.repository;
+        this.buildStepName = data.buildStepName;
+    }
+}
+exports.BuildStepCompletionInput = BuildStepCompletionInput;
+class BuildStep {
+    constructor(data) {
+        this.runtime = data.runtime;
+        this.name = data.name;
+        this.displayName = data.displayName;
+        this.complete = data.complete;
+        this.buildTool = data.buildTool;
+        this.commands = data.commands;
+        this.commandSuggestions = data.commandSuggestions;
+        this.variables = data.variables;
+    }
+}
+exports.BuildStep = BuildStep;
+class TemplateFileCompletionInput {
+    constructor(data) {
+        this.path = data.path;
+        this.repository = data.repository;
+        this.sourceFile = data.sourceFile;
+        this.templateCompletionType = data.templateCompletionType;
+        this.databaseEnabled = data.databaseEnabled;
+        this.mailEnabled = data.mailEnabled;
+    }
+}
+exports.TemplateFileCompletionInput = TemplateFileCompletionInput;
+class TemplateFile {
+    constructor(data) {
+        this.content = data.content;
+        this.path = data.path;
+        this.completionType = data.completionType;
+    }
+}
+exports.TemplateFile = TemplateFile;
+class DetectionInput {
+    constructor(data) {
+        this.repository = data.repository;
+        this.frameworkId = data.frameworkId;
+    }
+}
+exports.DetectionInput = DetectionInput;
+class FrameworkDefinitionInput {
+    constructor(data) {
+        this.name = data.name;
+        this.type = data.type;
+        this.logoUrl = data.logoUrl;
+        this.detections = data.detections;
+        this.buildSteps = data.buildSteps;
+        this.deployStep = data.deployStep;
+        this.supported = data.supported;
+        this.requiredFeatures = data.requiredFeatures;
+        this.templateFiles = data.templateFiles;
+    }
+}
+exports.FrameworkDefinitionInput = FrameworkDefinitionInput;
+class FrameworkDefinition {
+    constructor(data) {
+        this.name = data.name;
+        this.id = data.id;
+        this.type = data.type;
+        this.logoUrl = data.logoUrl;
+        this.detections = data.detections;
+        this.buildSteps = data.buildSteps;
+        this.deployStep = data.deployStep;
+        this.supported = data.supported;
+        this.requiredFeatures = data.requiredFeatures;
+        this.templateFiles = data.templateFiles;
+    }
+}
+exports.FrameworkDefinition = FrameworkDefinition;
+class InstallationInput {
+    constructor(data) {
+        this.code = data.code;
+        this.externalId = data.externalId;
+    }
+}
+exports.InstallationInput = InstallationInput;
+class Installation {
+    constructor(data) {
+        this.id = data.id;
+        this.account = data.account;
+        this.externalId = data.externalId;
+        this.suspended = data.suspended;
+        this.necessaryPermissions = data.necessaryPermissions;
+        this.missingPermissions = data.missingPermissions;
+    }
+}
+exports.Installation = Installation;
+class ProjectInput {
+    constructor(data) {
+        this.projectType = data.projectType;
+        this.projectName = data.projectName;
+        this.databaseEnabled = data.databaseEnabled;
+        this.buildSteps = data.buildSteps;
+        this.templateStep = data.templateStep;
+        this.deployStep = data.deployStep;
+        this.sourceRepository = data.sourceRepository;
+        this.destinationRepository = data.destinationRepository;
+        this.automaticDeploymentEnabled = data.automaticDeploymentEnabled;
+        this.overwriteWorkflow = data.overwriteWorkflow;
+        this.mailAccountEnabled = data.mailAccountEnabled;
+        this.visitorStatisticsEnabled = data.visitorStatisticsEnabled;
+        this.defaultPhpVersion = data.defaultPhpVersion;
+    }
+}
+exports.ProjectInput = ProjectInput;
+class Project {
+    constructor(data) {
+        this.name = data.name;
+        this.id = data.id;
+        this.locked = data.locked;
+        this.productionBranchId = data.productionBranchId;
+        this.domains = data.domains;
+        this.projectType = data.projectType;
+        this.providerType = data.providerType;
+        this.lastChangedDate = data.lastChangedDate;
+        this.deleted = data.deleted;
+        this.permissionLost = data.permissionLost;
+        this.gitRepository = data.gitRepository;
+        this.productionDeploymentCount = data.productionDeploymentCount;
+        this.stagingDeploymentCount = data.stagingDeploymentCount;
+        this.maxStagingDeploymentCount = data.maxStagingDeploymentCount;
+        this.automaticDeploymentEnabled = data.automaticDeploymentEnabled;
+        this.defaultPhpVersion = data.defaultPhpVersion;
+        this.databaseSettings = data.databaseSettings;
+        this.visitorStatisticsEnabled = data.visitorStatisticsEnabled;
+        this.spawningEnabled = data.spawningEnabled;
+        this.siteUrls = data.siteUrls;
+    }
+}
+exports.Project = Project;
+class ProjectDeleteOperation {
+    constructor(data) {
+        this.deleteRepository = data.deleteRepository;
+    }
+}
+exports.ProjectDeleteOperation = ProjectDeleteOperation;
+class UpgradeInformation {
+    constructor(data) {
+        this.possibleTargetProjectTypes = data.possibleTargetProjectTypes;
+    }
+}
+exports.UpgradeInformation = UpgradeInformation;
+class ProjectPatch {
+    constructor(data) {
+        this.projectNamePatch = data.projectNamePatch;
+        this.automaticDeploymentEnabledPatch = data.automaticDeploymentEnabledPatch;
+        this.projectTypePatch = data.projectTypePatch;
+        this.defaultPhpVersionPatch = data.defaultPhpVersionPatch;
+        this.visitorStatisticsEnabledPatch = data.visitorStatisticsEnabledPatch;
+    }
+}
+exports.ProjectPatch = ProjectPatch;
+class DeploymentNameValidationRequest {
+    constructor(data) {
+        this.deploymentName = data.deploymentName;
+    }
+}
+exports.DeploymentNameValidationRequest = DeploymentNameValidationRequest;
+class ProjectType {
+    constructor(data) {
+        this.name = data.name;
+        this.group = data.group;
+        this.availableFeatures = data.availableFeatures;
+        this.stagingDeploymentCount = data.stagingDeploymentCount;
+        this.resourceLevel = data.resourceLevel;
+        this.diskQuotaPerBranch = data.diskQuotaPerBranch;
+        this.databaseQuotaPerBranch = data.databaseQuotaPerBranch;
+        this.orderable = data.orderable;
+    }
+}
+exports.ProjectType = ProjectType;
+class ProjectTypeInput {
+    constructor(data) {
+        this.name = data.name;
+        this.group = data.group;
+        this.availableFeatures = data.availableFeatures;
+        this.stagingDeploymentCount = data.stagingDeploymentCount;
+        this.resourceLevel = data.resourceLevel;
+        this.diskQuotaPerBranch = data.diskQuotaPerBranch;
+        this.databaseQuotaPerBranch = data.databaseQuotaPerBranch;
+        this.orderable = data.orderable;
+    }
+}
+exports.ProjectTypeInput = ProjectTypeInput;
+class TokenAuthInput {
+    constructor(data) {
+        this.type = data.type;
+        this.code = data.code;
+    }
+}
+exports.TokenAuthInput = TokenAuthInput;
+class UserSession {
+    constructor(data) {
+        this.frontendToken = data.frontendToken;
+    }
+}
+exports.UserSession = UserSession;
+class ProjectTypeCount {
+    constructor(data) {
+        this.name = data.name;
+        this.total = data.total;
+        this.used = data.used;
+    }
+}
+exports.ProjectTypeCount = ProjectTypeCount;
+class SortField {
+    constructor(data) {
+        this.name = data.name;
+        this.direction = data.direction;
+    }
+}
+exports.SortField = SortField;
+class Page {
+    constructor(data) {
+        this.pageNumber = data.pageNumber;
+        this.pageSize = data.pageSize;
+        this.total = data.total;
+        this.values = data.values;
+    }
+}
+exports.Page = Page;
+class DetailedAccountOverview {
+    constructor(data) {
+        this.id = data.id;
+        this.provisioningId = data.provisioningId;
+        this.stackInstanceId = data.stackInstanceId;
+        this.market = data.market;
+        this.softLockedDate = data.softLockedDate;
+        this.hardLockedDate = data.hardLockedDate;
+        this.deletedDate = data.deletedDate;
+        this.createdDate = data.createdDate;
+        this.lastChangedDate = data.lastChangedDate;
+        this.projectsCount = data.projectsCount;
+    }
+}
+exports.DetailedAccountOverview = DetailedAccountOverview;
+class Domain {
+    constructor(data) {
+        this.name = data.name;
+        this.type = data.type;
+        this.inUse = data.inUse;
+    }
+}
+exports.Domain = Domain;
+class WelcomeShownPatch {
+    constructor(data) {
+        this.operation = data.operation;
+        this.payload = data.payload;
+    }
+}
+exports.WelcomeShownPatch = WelcomeShownPatch;
+class FeedbackTileShownPatch {
+    constructor(data) {
+        this.operation = data.operation;
+        this.payload = data.payload;
+    }
+}
+exports.FeedbackTileShownPatch = FeedbackTileShownPatch;
+class UnusableAccount {
+    constructor(data) {
+        this.contractToolLink = data.contractToolLink;
+    }
+}
+exports.UnusableAccount = UnusableAccount;
+class CompletedPart {
+    constructor(data) {
+        this.number = data.number;
+        this.eTag = data.eTag;
+    }
+}
+exports.CompletedPart = CompletedPart;
+class BranchBuildState {
+    constructor(data) {
+        this.state = data.state;
+        this.url = data.url;
+        this.lastBuildDate = data.lastBuildDate;
+    }
+}
+exports.BranchBuildState = BranchBuildState;
+class BranchDeploymentState {
+    constructor(data) {
+        this.state = data.state;
+        this.lastDeploymentDate = data.lastDeploymentDate;
+    }
+}
+exports.BranchDeploymentState = BranchDeploymentState;
+class BranchOverview {
+    constructor(data) {
+        this.name = data.name;
+        this.id = data.id;
+        this.productionBranch = data.productionBranch;
+        this.webUrl = data.webUrl;
+        this.workflowPresent = data.workflowPresent;
+        this.deprecatedWorkflow = data.deprecatedWorkflow;
+        this.deleted = data.deleted;
+        this.deploymentCount = data.deploymentCount;
+        this.buildState = data.buildState;
+        this.deploymentState = data.deploymentState;
+    }
+}
+exports.BranchOverview = BranchOverview;
+class BuildJobLog {
+    constructor(data) {
+        this.name = data.name;
+        this.steps = data.steps;
+    }
+}
+exports.BuildJobLog = BuildJobLog;
+class BranchBuild {
+    constructor(data) {
+        this.name = data.name;
+        this.id = data.id;
+        this.state = data.state;
+        this.number = data.number;
+        this.createdDate = data.createdDate;
+    }
+}
+exports.BranchBuild = BranchBuild;
+class PhpVersionPatch {
+    constructor(data) {
+        this.operation = data.operation;
+        this.payload = data.payload;
+    }
+}
+exports.PhpVersionPatch = PhpVersionPatch;
+class CronJob {
+    constructor(data) {
+        this.command = data.command;
+        this.schedule = data.schedule;
+    }
+}
+exports.CronJob = CronJob;
+class DetailedDeploymentState {
+    constructor(data) {
+        this.state = data.state;
+        this.url = data.url;
+        this.lastDeployedDate = data.lastDeployedDate;
+        this.externalId = data.externalId;
+        this.occurrenceTime = data.occurrenceTime;
+    }
+}
+exports.DetailedDeploymentState = DetailedDeploymentState;
+class DeploymentDomain {
+    constructor(data) {
+        this.name = data.name;
+        this.customDomain = data.customDomain;
+    }
+}
+exports.DeploymentDomain = DeploymentDomain;
+class DetailedWebspace {
+    constructor(data) {
+        this.state = data.state;
+        this.webspace = data.webspace;
+    }
+}
+exports.DetailedWebspace = DetailedWebspace;
+class DetailedDatabase {
+    constructor(data) {
+        this.state = data.state;
+        this.database = data.database;
+    }
+}
+exports.DetailedDatabase = DetailedDatabase;
+class DeploymentOverview {
+    constructor(data) {
+        this.name = data.name;
+        this.id = data.id;
+        this.state = data.state;
+        this.domain = data.domain;
+        this.webspace = data.webspace;
+        this.database = data.database;
+    }
+}
+exports.DeploymentOverview = DeploymentOverview;
+class DeploymentPhpVersionPatch {
+    constructor(data) {
+        this.operation = data.operation;
+        this.payload = data.payload;
+    }
+}
+exports.DeploymentPhpVersionPatch = DeploymentPhpVersionPatch;
+class DeploymentNamePatch {
+    constructor(data) {
+        this.operation = data.operation;
+        this.payload = data.payload;
+    }
+}
+exports.DeploymentNamePatch = DeploymentNamePatch;
+class Runtime {
+    constructor(data) {
+        this.name = data.name;
+        this.version = data.version;
+    }
+}
+exports.Runtime = Runtime;
+class BuildTool {
+    constructor(data) {
+        this.name = data.name;
+        this.version = data.version;
+    }
+}
+exports.BuildTool = BuildTool;
+class DetectionResult {
+    constructor(data) {
+        this.detectionBase = data.detectionBase;
+        this.buildSteps = data.buildSteps;
+        this.templateStep = data.templateStep;
+        this.deployStep = data.deployStep;
+        this.supported = data.supported;
+        this.requiredFeatures = data.requiredFeatures;
+    }
+}
+exports.DetectionResult = DetectionResult;
+class BuildStepDefinition {
+    constructor(data) {
+        this.name = data.name;
+        this.commands = data.commands;
+        this.variables = data.variables;
+        this.completionHints = data.completionHints;
+    }
+}
+exports.BuildStepDefinition = BuildStepDefinition;
+class DeployStepDefinition {
+    constructor(data) {
+        this.deploymentFolder = data.deploymentFolder;
+        this.bootstrapConfig = data.bootstrapConfig;
+        this.recurringConfig = data.recurringConfig;
+        this.cronJobs = data.cronJobs;
+    }
+}
+exports.DeployStepDefinition = DeployStepDefinition;
+class SupportedInput {
+    constructor(data) {
+        this.reason = data.reason;
+        this.supported = data.supported;
+        this.compensation = data.compensation;
+    }
+}
+exports.SupportedInput = SupportedInput;
+class TemplateFileDefinition {
+    constructor(data) {
+        this.type = data.type;
+        this.path = data.path;
+    }
+}
+exports.TemplateFileDefinition = TemplateFileDefinition;
+class Supported {
+    constructor(data) {
+        this.supported = data.supported;
+        this.reason = data.reason;
+        this.compensation = data.compensation;
+    }
+}
+exports.Supported = Supported;
+class GithubIdentity {
+    constructor(data) {
+        this.name = data.name;
+        this.type = data.type;
+        this.avatarUrl = data.avatarUrl;
+    }
+}
+exports.GithubIdentity = GithubIdentity;
+class GithubRepository {
+    constructor(data) {
+        this.fullName = data.fullName;
+        this.inUse = data.inUse;
+        this.httpCloneUrl = data.httpCloneUrl;
+        this.sshCloneUrl = data.sshCloneUrl;
+        this.defaultBranch = data.defaultBranch;
+    }
+}
+exports.GithubRepository = GithubRepository;
+class BuildStepDescription {
+    constructor(data) {
+        this.name = data.name;
+        this.displayName = data.displayName;
+        this.description = data.description;
+        this.runtimeName = data.runtimeName;
+        this.buildToolName = data.buildToolName;
+        this.exampleCommands = data.exampleCommands;
+        this.exampleVariables = data.exampleVariables;
+    }
+}
+exports.BuildStepDescription = BuildStepDescription;
+class TemplateFileCompletionDescription {
+    constructor(data) {
+        this.type = data.type;
+        this.displayName = data.displayName;
+        this.description = data.description;
+        this.supportedInputs = data.supportedInputs;
+    }
+}
+exports.TemplateFileCompletionDescription = TemplateFileCompletionDescription;
+class BuildStepInput {
+    constructor(data) {
+        this.name = data.name;
+        this.commands = data.commands;
+        this.variables = data.variables;
+        this.runtimeVersion = data.runtimeVersion;
+        this.buildToolVersion = data.buildToolVersion;
+    }
+}
+exports.BuildStepInput = BuildStepInput;
+class TemplateStepInput {
+    constructor(data) {
+        this.templateFiles = data.templateFiles;
+        this.secrets = data.secrets;
+    }
+}
+exports.TemplateStepInput = TemplateStepInput;
+class DeployStepInput {
+    constructor(data) {
+        this.deploymentFolder = data.deploymentFolder;
+        this.bootstrapConfig = data.bootstrapConfig;
+        this.recurringConfig = data.recurringConfig;
+        this.cronJobs = data.cronJobs;
+    }
+}
+exports.DeployStepInput = DeployStepInput;
+class DestinationRepositoryInput {
+    constructor(data) {
+        this.repository = data.repository;
+        this.privateRepo = data.privateRepo;
+    }
+}
+exports.DestinationRepositoryInput = DestinationRepositoryInput;
+class GitRepository {
+    constructor(data) {
+        this.fullName = data.fullName;
+        this.httpCloneUrl = data.httpCloneUrl;
+        this.sshCloneUrl = data.sshCloneUrl;
+    }
+}
+exports.GitRepository = GitRepository;
+class DatabaseSettings {
+    constructor(data) {
+        this.type = data.type;
+        this.version = data.version;
+    }
+}
+exports.DatabaseSettings = DatabaseSettings;
+class ProjectOverview {
+    constructor(data) {
+        this.name = data.name;
+        this.id = data.id;
+        this.locked = data.locked;
+        this.productionBranchId = data.productionBranchId;
+        this.domains = data.domains;
+        this.projectType = data.projectType;
+        this.providerType = data.providerType;
+        this.lastChangedDate = data.lastChangedDate;
+        this.deleted = data.deleted;
+        this.permissionLost = data.permissionLost;
+        this.gitRepository = data.gitRepository;
+        this.productionDeploymentCount = data.productionDeploymentCount;
+        this.stagingDeploymentCount = data.stagingDeploymentCount;
+        this.spawningEnabled = data.spawningEnabled;
+        this.siteUrls = data.siteUrls;
+    }
+}
+exports.ProjectOverview = ProjectOverview;
+class ProjectNamePatch {
+    constructor(data) {
+        this.operation = data.operation;
+        this.payload = data.payload;
+    }
+}
+exports.ProjectNamePatch = ProjectNamePatch;
+class AutomaticDeploymentEnabledPatch {
+    constructor(data) {
+        this.operation = data.operation;
+        this.payload = data.payload;
+    }
+}
+exports.AutomaticDeploymentEnabledPatch = AutomaticDeploymentEnabledPatch;
+class ProjectTypePatch {
+    constructor(data) {
+        this.operation = data.operation;
+        this.payload = data.payload;
+    }
+}
+exports.ProjectTypePatch = ProjectTypePatch;
+class DefaultPhpVersionPatch {
+    constructor(data) {
+        this.operation = data.operation;
+        this.payload = data.payload;
+    }
+}
+exports.DefaultPhpVersionPatch = DefaultPhpVersionPatch;
+class VisitorStatisticsEnabledPatch {
+    constructor(data) {
+        this.operation = data.operation;
+        this.payload = data.payload;
+    }
+}
+exports.VisitorStatisticsEnabledPatch = VisitorStatisticsEnabledPatch;
+class Token {
+    constructor(data) {
+        this.type = data.type;
+    }
+}
+exports.Token = Token;
+class GitHubConnection {
+    constructor(data) {
+        this.type = data.type;
+        this.installationId = data.installationId;
+    }
+}
+exports.GitHubConnection = GitHubConnection;
+class BuildStepLog {
+    constructor(data) {
+        this.name = data.name;
+        this.log = data.log;
+    }
+}
+exports.BuildStepLog = BuildStepLog;
+class Webspace {
+    constructor(data) {
+        this.id = data.id;
+        this.username = data.username;
+        this.sshHost = data.sshHost;
+        this.siteUrl = data.siteUrl;
+        this.phpVersion = data.phpVersion;
+        this.quota = data.quota;
+    }
+}
+exports.Webspace = Webspace;
+class Database {
+    constructor(data) {
+        this.name = data.name;
+        this.id = data.id;
+        this.type = data.type;
+        this.host = data.host;
+        this.version = data.version;
+        this.username = data.username;
+        this.databaseQuota = data.databaseQuota;
+    }
+}
+exports.Database = Database;
+class WebspaceOverview {
+    constructor(data) {
+        this.id = data.id;
+        this.sshHost = data.sshHost;
+        this.siteUrl = data.siteUrl;
+        this.phpVersion = data.phpVersion;
+    }
+}
+exports.WebspaceOverview = WebspaceOverview;
+class DatabaseOverview {
+    constructor(data) {
+        this.name = data.name;
+        this.id = data.id;
+        this.type = data.type;
+        this.host = data.host;
+        this.version = data.version;
+    }
+}
+exports.DatabaseOverview = DatabaseOverview;
+class GithubRepositoryInput {
+    constructor(data) {
+        this.type = data.type;
+        this.owner = data.owner;
+        this.branch = data.branch;
+        this.repo = data.repo;
+    }
+}
+exports.GithubRepositoryInput = GithubRepositoryInput;
+class DetectionBase {
+    constructor(data) {
+        this.type = data.type;
+        this.framework = data.framework;
+    }
+}
+exports.DetectionBase = DetectionBase;
+class TemplateStep {
+    constructor(data) {
+        this.templateFiles = data.templateFiles;
+        this.secrets = data.secrets;
+    }
+}
+exports.TemplateStep = TemplateStep;
+class DeployStep {
+    constructor(data) {
+        this.deploymentFolder = data.deploymentFolder;
+        this.bootstrapConfig = data.bootstrapConfig;
+        this.recurringConfig = data.recurringConfig;
+        this.cronJobs = data.cronJobs;
+    }
+}
+exports.DeployStep = DeployStep;
+class DependencyDetection {
+    constructor(data) {
+        this.type = data.type;
+        this.filename = data.filename;
+        this.patterns = data.patterns;
+    }
+}
+exports.DependencyDetection = DependencyDetection;
+class FileContentDetection {
+    constructor(data) {
+        this.type = data.type;
+        this.filename = data.filename;
+        this.patterns = data.patterns;
+    }
+}
+exports.FileContentDetection = FileContentDetection;
+class FileDetection {
+    constructor(data) {
+        this.type = data.type;
+        this.filename = data.filename;
+    }
+}
+exports.FileDetection = FileDetection;
+class LanguageDetection {
+    constructor(data) {
+        this.type = data.type;
+        this.language = data.language;
+    }
+}
+exports.LanguageDetection = LanguageDetection;
+class Variable {
+    constructor(data) {
+        this.value = data.value;
+        this.secret = data.secret;
+    }
+}
+exports.Variable = Variable;
+class DeploymentConfiguration {
+    constructor(data) {
+        this.excludes = data.excludes;
+        this.remoteCommands = data.remoteCommands;
+    }
+}
+exports.DeploymentConfiguration = DeploymentConfiguration;
+class VariableInput {
+    constructor(data) {
+        this.value = data.value;
+        this.secret = data.secret;
+    }
+}
+exports.VariableInput = VariableInput;
+class TemplateFileInput {
+    constructor(data) {
+        this.content = data.content;
+        this.path = data.path;
+    }
+}
+exports.TemplateFileInput = TemplateFileInput;
+class DeploymentConfigurationInput {
+    constructor(data) {
+        this.excludes = data.excludes;
+        this.remoteCommands = data.remoteCommands;
+    }
+}
+exports.DeploymentConfigurationInput = DeploymentConfigurationInput;
+class WebspaceQuota {
+    constructor(data) {
+        this.storageQuota = data.storageQuota;
+        this.storageUsage = data.storageUsage;
+        this.fileQuota = data.fileQuota;
+        this.fileUsage = data.fileUsage;
+    }
+}
+exports.WebspaceQuota = WebspaceQuota;
+class DatabaseQuota {
+    constructor(data) {
+        this.tableSpaceQuota = data.tableSpaceQuota;
+        this.tableSpaceUsage = data.tableSpaceUsage;
+    }
+}
+exports.DatabaseQuota = DatabaseQuota;
+class FrameworkIdentifier {
+    constructor(data) {
+        this.name = data.name;
+        this.id = data.id;
+    }
+}
+exports.FrameworkIdentifier = FrameworkIdentifier;
+class RemoteCommands {
+    constructor(data) {
+        this.preDeployment = data.preDeployment;
+        this.postDeployment = data.postDeployment;
+    }
+}
+exports.RemoteCommands = RemoteCommands;
+class IonosSpaceUserSessionApiClient {
+    constructor(httpClient) {
+        this.httpClient = httpClient;
+    }
+    /**
+     * HTTP POST /v4/user-session
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceUserSessionApi.createUserSession
+     */
+    createUserSession(options) {
+        return this.httpClient.request({ method: "POST", url: uriEncoding `v4/user-session`, options: options });
+    }
+}
+exports.IonosSpaceUserSessionApiClient = IonosSpaceUserSessionApiClient;
+class IonosSpaceTokensApiClient {
+    constructor(httpClient) {
+        this.httpClient = httpClient;
+    }
+    /**
+     * HTTP POST /v4/accounts/{accountId}/tokens
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceTokensApi.createToken
+     */
+    createToken(accountId, tokenAuth, options) {
+        return this.httpClient.request({ method: "POST", url: uriEncoding `v4/accounts/${accountId}/tokens`, data: tokenAuth, options: options });
+    }
+    /**
+     * HTTP GET /v4/accounts/{accountId}/tokens
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceTokensApi.getTokens
+     */
+    getTokens(accountId, options) {
+        return this.httpClient.request({ method: "GET", url: uriEncoding `v4/accounts/${accountId}/tokens`, options: options });
+    }
+    /**
+     * HTTP DELETE /v4/accounts/{accountId}/tokens/{type}
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceTokensApi.deleteToken
+     */
+    deleteToken(accountId, type, options) {
+        return this.httpClient.request({ method: "DELETE", url: uriEncoding `v4/accounts/${accountId}/tokens/${type}`, options: options });
+    }
+}
+exports.IonosSpaceTokensApiClient = IonosSpaceTokensApiClient;
+class IonosSpaceAccountInfoApiClient {
+    constructor(httpClient) {
+        this.httpClient = httpClient;
+    }
+    /**
+     * HTTP GET /v4/account-info
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceAccountInfoApi.getAccountInfo
+     */
+    getAccountInfo(options) {
+        return this.httpClient.request({ method: "GET", url: uriEncoding `v4/account-info`, options: options });
+    }
+}
+exports.IonosSpaceAccountInfoApiClient = IonosSpaceAccountInfoApiClient;
+class IonosSpaceFrameworkApiClient {
+    constructor(httpClient) {
+        this.httpClient = httpClient;
+    }
+    /**
+     * HTTP POST /v4/frameworks
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceFrameworkApi.createFramework
+     */
+    createFramework(frameworkDefinition, options) {
+        return this.httpClient.request({ method: "POST", url: uriEncoding `v4/frameworks`, data: frameworkDefinition, options: options });
+    }
+    /**
+     * HTTP GET /v4/frameworks
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceFrameworkApi.getFrameworks
+     */
+    getFrameworks(queryParams, options) {
+        return this.httpClient.request({ method: "GET", url: uriEncoding `v4/frameworks`, queryParams: queryParams, options: options });
+    }
+    /**
+     * HTTP DELETE /v4/frameworks/{frameworkId}
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceFrameworkApi.deleteFramework
+     */
+    deleteFramework(frameworkId, options) {
+        return this.httpClient.request({ method: "DELETE", url: uriEncoding `v4/frameworks/${frameworkId}`, options: options });
+    }
+    /**
+     * HTTP GET /v4/frameworks/{frameworkId}
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceFrameworkApi.getFramework
+     */
+    getFramework(frameworkId, options) {
+        return this.httpClient.request({ method: "GET", url: uriEncoding `v4/frameworks/${frameworkId}`, options: options });
+    }
+    /**
+     * HTTP PUT /v4/frameworks/{frameworkId}
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceFrameworkApi.updateFramework
+     */
+    updateFramework(frameworkId, frameworkDefinition, options) {
+        return this.httpClient.request({ method: "PUT", url: uriEncoding `v4/frameworks/${frameworkId}`, data: frameworkDefinition, options: options });
+    }
+}
+exports.IonosSpaceFrameworkApiClient = IonosSpaceFrameworkApiClient;
+class IonosSpaceProjectApiClient {
+    constructor(httpClient) {
+        this.httpClient = httpClient;
+    }
+    /**
+     * HTTP POST /v4/accounts/{accountId}/projects
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceProjectApi.createProject
+     */
+    createProject(accountId, project, options) {
+        return this.httpClient.request({ method: "POST", url: uriEncoding `v4/accounts/${accountId}/projects`, data: project, options: options });
+    }
+    /**
+     * HTTP GET /v4/accounts/{accountId}/projects
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceProjectApi.getProjects
+     */
+    getProjects(accountId, queryParams, options) {
+        return this.httpClient.request({ method: "GET", url: uriEncoding `v4/accounts/${accountId}/projects`, queryParams: queryParams, options: options });
+    }
+    /**
+     * HTTP DELETE /v4/accounts/{accountId}/projects/{projectId}
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceProjectApi.deleteProject
+     */
+    deleteProject(accountId, projectId, projectDeleteOperation, options) {
+        return this.httpClient.request({ method: "DELETE", url: uriEncoding `v4/accounts/${accountId}/projects/${projectId}`, data: projectDeleteOperation, options: options });
+    }
+    /**
+     * HTTP GET /v4/accounts/{accountId}/projects/{projectId}
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceProjectApi.getProject
+     */
+    getProject(accountId, projectId, options) {
+        return this.httpClient.request({ method: "GET", url: uriEncoding `v4/accounts/${accountId}/projects/${projectId}`, options: options });
+    }
+    /**
+     * HTTP PATCH /v4/accounts/{accountId}/projects/{projectId}
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceProjectApi.patchProject
+     */
+    patchProject(accountId, projectId, projectPatch, options) {
+        return this.httpClient.request({ method: "PATCH", url: uriEncoding `v4/accounts/${accountId}/projects/${projectId}`, data: projectPatch, options: options });
+    }
+    /**
+     * HTTP POST /v4/accounts/{accountId}/projects/{projectId}/create-workflow-migration-pull-request
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceProjectApi.createWorkflowMigrationPullRequest
+     */
+    createWorkflowMigrationPullRequest(accountId, projectId, options) {
+        return this.httpClient.request({ method: "POST", url: uriEncoding `v4/accounts/${accountId}/projects/${projectId}/create-workflow-migration-pull-request`, options: options });
+    }
+    /**
+     * HTTP PUT /v4/accounts/{accountId}/projects/{projectId}/lock
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceProjectApi.lockProject
+     */
+    lockProject(accountId, projectId, options) {
+        return this.httpClient.request({ method: "PUT", url: uriEncoding `v4/accounts/${accountId}/projects/${projectId}/lock`, options: options });
+    }
+    /**
+     * HTTP DELETE /v4/accounts/{accountId}/projects/{projectId}/lock
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceProjectApi.unlockProject
+     */
+    unlockProject(accountId, projectId, options) {
+        return this.httpClient.request({ method: "DELETE", url: uriEncoding `v4/accounts/${accountId}/projects/${projectId}/lock`, options: options });
+    }
+    /**
+     * HTTP GET /v4/accounts/{accountId}/projects/{projectId}/possible-upgrades
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceProjectApi.getUpgrades
+     */
+    getUpgrades(accountId, projectId, options) {
+        return this.httpClient.request({ method: "GET", url: uriEncoding `v4/accounts/${accountId}/projects/${projectId}/possible-upgrades`, options: options });
+    }
+    /**
+     * HTTP POST /v4/accounts/{accountId}/projects/{projectId}/validate-deployment-name
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceProjectApi.validateDeploymentName
+     */
+    validateDeploymentName(accountId, projectId, deploymentNameValidationRequest, options) {
+        return this.httpClient.request({ method: "POST", url: uriEncoding `v4/accounts/${accountId}/projects/${projectId}/validate-deployment-name`, data: deploymentNameValidationRequest, options: options });
+    }
+}
+exports.IonosSpaceProjectApiClient = IonosSpaceProjectApiClient;
+class IonosSpaceEventsApiClient {
+    constructor(httpClient) {
+        this.httpClient = httpClient;
+    }
+    /**
+     * HTTP GET /v4/accounts/{accountId}/events
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceEventsApi.receiveAndRegister
+     */
+    receiveAndRegister(accountId, queryParams, options) {
+        return this.httpClient.request({ method: "GET", url: uriEncoding `v4/accounts/${accountId}/events`, queryParams: queryParams, options: options });
+    }
+}
+exports.IonosSpaceEventsApiClient = IonosSpaceEventsApiClient;
+class IonosSpaceBranchApiClient {
+    constructor(httpClient) {
+        this.httpClient = httpClient;
+    }
+    /**
+     * HTTP GET /v4/accounts/{accountId}/projects/{projectId}/branches
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceBranchApi.getBranches
+     */
+    getBranches(accountId, projectId, queryParams, options) {
+        return this.httpClient.request({ method: "GET", url: uriEncoding `v4/accounts/${accountId}/projects/${projectId}/branches`, queryParams: queryParams, options: options });
+    }
+    /**
+     * HTTP DELETE /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceBranchApi.deleteBranch
+     */
+    deleteBranch(accountId, projectId, branchId, branchDeleteOperation, options) {
+        return this.httpClient.request({ method: "DELETE", url: uriEncoding `v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}`, data: branchDeleteOperation, options: options });
+    }
+    /**
+     * HTTP GET /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceBranchApi.getBranch
+     */
+    getBranch(accountId, projectId, branchId, options) {
+        return this.httpClient.request({ method: "GET", url: uriEncoding `v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}`, options: options });
+    }
+    /**
+     * HTTP PATCH /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceBranchApi.patchBranch
+     */
+    patchBranch(accountId, projectId, branchId, branchPatch, options) {
+        return this.httpClient.request({ method: "PATCH", url: uriEncoding `v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}`, data: branchPatch, options: options });
+    }
+    /**
+     * HTTP GET /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}/builds
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceBranchApi.getBuilds
+     */
+    getBuilds(accountId, projectId, branchId, queryParams, options) {
+        return this.httpClient.request({ method: "GET", url: uriEncoding `v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}/builds`, queryParams: queryParams, options: options });
+    }
+    /**
+     * HTTP GET /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}/builds/{buildId}/logs
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceBranchApi.getBuildLogs
+     */
+    getBuildLogs(accountId, projectId, branchId, buildId, options) {
+        return this.httpClient.request({ method: "GET", url: uriEncoding `v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}/builds/${buildId}/logs`, options: options });
+    }
+    /**
+     * HTTP POST /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}/finish-deployments
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceBranchApi.finishDeployments
+     */
+    finishDeployments(accountId, projectId, branchId, options) {
+        return this.httpClient.request({ method: "POST", url: uriEncoding `v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}/finish-deployments`, options: options });
+    }
+    /**
+     * HTTP POST /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}/trigger-deployments
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceBranchApi.triggerDeployments
+     */
+    triggerDeployments(accountId, projectId, branchId, input, options) {
+        return this.httpClient.request({ method: "POST", url: uriEncoding `v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}/trigger-deployments`, data: input, options: options });
+    }
+}
+exports.IonosSpaceBranchApiClient = IonosSpaceBranchApiClient;
+class IonosSpaceDetectionApiClient {
+    constructor(httpClient) {
+        this.httpClient = httpClient;
+    }
+    /**
+     * HTTP POST /v4/accounts/{accountId}/complete-build-step
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceDetectionApi.completeBuildStep
+     */
+    completeBuildStep(accountId, completionInput, options) {
+        return this.httpClient.request({ method: "POST", url: uriEncoding `v4/accounts/${accountId}/complete-build-step`, data: completionInput, options: options });
+    }
+    /**
+     * HTTP POST /v4/accounts/{accountId}/complete-template-file
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceDetectionApi.completeTemplateFile
+     */
+    completeTemplateFile(accountId, completionInput, options) {
+        return this.httpClient.request({ method: "POST", url: uriEncoding `v4/accounts/${accountId}/complete-template-file`, data: completionInput, options: options });
+    }
+    /**
+     * HTTP POST /v4/accounts/{accountId}/detect-steps
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceDetectionApi.detectWorkflow
+     */
+    detectWorkflow(accountId, detection, options) {
+        return this.httpClient.request({ method: "POST", url: uriEncoding `v4/accounts/${accountId}/detect-steps`, data: detection, options: options });
+    }
+}
+exports.IonosSpaceDetectionApiClient = IonosSpaceDetectionApiClient;
+class IonosSpaceAccountApiClient {
+    constructor(httpClient) {
+        this.httpClient = httpClient;
+    }
+    /**
+     * HTTP GET /v4/accounts
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceAccountApi.getAccounts
+     */
+    getAccounts(queryParams, options) {
+        return this.httpClient.request({ method: "GET", url: uriEncoding `v4/accounts`, queryParams: queryParams, options: options });
+    }
+    /**
+     * HTTP GET /v4/accounts/{accountId}
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceAccountApi.getAccount
+     */
+    getAccount(accountId, options) {
+        return this.httpClient.request({ method: "GET", url: uriEncoding `v4/accounts/${accountId}`, options: options });
+    }
+    /**
+     * HTTP PATCH /v4/accounts/{accountId}
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceAccountApi.patchAccount
+     */
+    patchAccount(accountId, accountPatch, options) {
+        return this.httpClient.request({ method: "PATCH", url: uriEncoding `v4/accounts/${accountId}`, data: accountPatch, options: options });
+    }
+    /**
+     * HTTP POST /v4/accounts/{accountId}/disconnect-domains
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceAccountApi.disconnectDomains
+     */
+    disconnectDomains(accountId, input, options) {
+        return this.httpClient.request({ method: "POST", url: uriEncoding `v4/accounts/${accountId}/disconnect-domains`, data: input, options: options });
+    }
+    /**
+     * HTTP GET /v4/accounts/{accountId}/domains
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceAccountApi.getDomains
+     */
+    getDomains(accountId, queryParams, options) {
+        return this.httpClient.request({ method: "GET", url: uriEncoding `v4/accounts/${accountId}/domains`, queryParams: queryParams, options: options });
+    }
+    /**
+     * HTTP POST /v4/accounts/{accountId}/feedbacks
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceAccountApi.createFeedback
+     */
+    createFeedback(accountId, feedback, options) {
+        return this.httpClient.request({ method: "POST", url: uriEncoding `v4/accounts/${accountId}/feedbacks`, data: feedback, options: options });
+    }
+    /**
+     * HTTP PUT /v4/accounts/{accountId}/reset
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceAccountApi.resetAccount
+     */
+    resetAccount(accountId, options) {
+        return this.httpClient.request({ method: "PUT", url: uriEncoding `v4/accounts/${accountId}/reset`, options: options });
+    }
+    /**
+     * HTTP GET /v4/accounts/{accountId}/upsell-information
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceAccountApi.getUpsellInformation
+     */
+    getUpsellInformation(accountId, options) {
+        return this.httpClient.request({ method: "GET", url: uriEncoding `v4/accounts/${accountId}/upsell-information`, options: options });
+    }
+    /**
+     * HTTP POST /v4/accounts/{accountId}/validate-project-name
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceAccountApi.validateProjectName
+     */
+    validateProjectName(accountId, projectNameValidationRequest, options) {
+        return this.httpClient.request({ method: "POST", url: uriEncoding `v4/accounts/${accountId}/validate-project-name`, data: projectNameValidationRequest, options: options });
+    }
+}
+exports.IonosSpaceAccountApiClient = IonosSpaceAccountApiClient;
+class IonosSpaceMetadataApiClient {
+    constructor(httpClient) {
+        this.httpClient = httpClient;
+    }
+    /**
+     * HTTP GET /v4/metadata/build-step-descriptions
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceMetadataApi.getBuildStepDescriptions
+     */
+    getBuildStepDescriptions(options) {
+        return this.httpClient.request({ method: "GET", url: uriEncoding `v4/metadata/build-step-descriptions`, options: options });
+    }
+    /**
+     * HTTP GET /v4/metadata/template-file-descriptions
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceMetadataApi.getTemplateFileCompletionDescriptions
+     */
+    getTemplateFileCompletionDescriptions(options) {
+        return this.httpClient.request({ method: "GET", url: uriEncoding `v4/metadata/template-file-descriptions`, options: options });
+    }
+    /**
+     * HTTP GET /v4/metadata/versions/{toolName}
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceMetadataApi.getAvailableVersions
+     */
+    getAvailableVersions(toolName, options) {
+        return this.httpClient.request({ method: "GET", url: uriEncoding `v4/metadata/versions/${toolName}`, options: options });
+    }
+}
+exports.IonosSpaceMetadataApiClient = IonosSpaceMetadataApiClient;
+class IonosSpaceGithubWebhookApiClient {
+    constructor(httpClient) {
+        this.httpClient = httpClient;
+    }
+    /**
+     * HTTP POST /v4/github-hooks
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceGithubWebhookApi.onHook
+     */
+    onHook(payload, options) {
+        return this.httpClient.request({ method: "POST", url: uriEncoding `v4/github-hooks`, data: payload, options: options });
+    }
+}
+exports.IonosSpaceGithubWebhookApiClient = IonosSpaceGithubWebhookApiClient;
+class IonosSpaceArtifactApiClient {
+    constructor(httpClient) {
+        this.httpClient = httpClient;
+    }
+    /**
+     * HTTP GET /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}/artifacts/{version}
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceArtifactApi.getArtifact
+     */
+    getArtifact(accountId, projectId, branchId, version, options) {
+        return this.httpClient.request({ method: "GET", url: uriEncoding `v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}/artifacts/${version}`, options: options });
+    }
+    /**
+     * HTTP PUT /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}/artifacts/{version}/complete
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceArtifactApi.completeUpload
+     */
+    completeUpload(accountId, projectId, branchId, version, input, options) {
+        return this.httpClient.request({ method: "PUT", url: uriEncoding `v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}/artifacts/${version}/complete`, data: input, options: options });
+    }
+    /**
+     * HTTP PUT /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}/artifacts/{version}/prepare
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceArtifactApi.prepareUpload
+     */
+    prepareUpload(accountId, projectId, branchId, version, input, options) {
+        return this.httpClient.request({ method: "PUT", url: uriEncoding `v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}/artifacts/${version}/prepare`, data: input, options: options });
+    }
+}
+exports.IonosSpaceArtifactApiClient = IonosSpaceArtifactApiClient;
+class IonosSpaceProjectTypesApiClient {
+    constructor(httpClient) {
+        this.httpClient = httpClient;
+    }
+    /**
+     * HTTP GET /v4/project-types
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceProjectTypesApi.getProjectTypes
+     */
+    getProjectTypes(queryParams, options) {
+        return this.httpClient.request({ method: "GET", url: uriEncoding `v4/project-types`, queryParams: queryParams, options: options });
+    }
+    /**
+     * HTTP POST /v4/project-types
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceProjectTypesApi.save
+     */
+    save(projectType, options) {
+        return this.httpClient.request({ method: "POST", url: uriEncoding `v4/project-types`, data: projectType, options: options });
+    }
+    /**
+     * HTTP GET /v4/project-types/{name}
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceProjectTypesApi.getProjectType
+     */
+    getProjectType(name, options) {
+        return this.httpClient.request({ method: "GET", url: uriEncoding `v4/project-types/${name}`, options: options });
+    }
+}
+exports.IonosSpaceProjectTypesApiClient = IonosSpaceProjectTypesApiClient;
+class IonosSpaceGithubApiClient {
+    constructor(httpClient) {
+        this.httpClient = httpClient;
+    }
+    /**
+     * HTTP POST /v4/accounts/{accountId}/github-installations
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceGithubApi.createInstallation
+     */
+    createInstallation(accountId, installation, options) {
+        return this.httpClient.request({ method: "POST", url: uriEncoding `v4/accounts/${accountId}/github-installations`, data: installation, options: options });
+    }
+    /**
+     * HTTP GET /v4/accounts/{accountId}/github-installations/{installationId}
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceGithubApi.getInstallation
+     */
+    getInstallation(accountId, installationId, options) {
+        return this.httpClient.request({ method: "GET", url: uriEncoding `v4/accounts/${accountId}/github-installations/${installationId}`, options: options });
+    }
+    /**
+     * HTTP GET /v4/accounts/{accountId}/github-installations/{installationId}/repositories
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceGithubApi.getRepositories
+     */
+    getRepositories(accountId, installationId, queryParams, options) {
+        return this.httpClient.request({ method: "GET", url: uriEncoding `v4/accounts/${accountId}/github-installations/${installationId}/repositories`, queryParams: queryParams, options: options });
+    }
+    /**
+     * HTTP HEAD /v4/accounts/{accountId}/github-installations/{installationId}/repositories/{owner}/{repo}
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceGithubApi.existsGithubRepository
+     */
+    existsGithubRepository(accountId, installationId, owner, repo, options) {
+        return this.httpClient.request({ method: "HEAD", url: uriEncoding `v4/accounts/${accountId}/github-installations/${installationId}/repositories/${owner}/${repo}`, options: options });
+    }
+    /**
+     * HTTP GET /v4/accounts/{accountId}/github-installations/{installationId}/repositories/{owner}/{repo}/branches
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceGithubApi.getBranches
+     */
+    getBranches(accountId, installationId, owner, repo, queryParams, options) {
+        return this.httpClient.request({ method: "GET", url: uriEncoding `v4/accounts/${accountId}/github-installations/${installationId}/repositories/${owner}/${repo}/branches`, queryParams: queryParams, options: options });
+    }
+    /**
+     * HTTP HEAD /v4/accounts/{accountId}/github-installations/{installationId}/repositories/{owner}/{repo}/branches/{branchName}/workflows
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceGithubApi.existsIonosSpaceWorkflow
+     */
+    existsIonosSpaceWorkflow(accountId, installationId, owner, repo, branchName, options) {
+        return this.httpClient.request({ method: "HEAD", url: uriEncoding `v4/accounts/${accountId}/github-installations/${installationId}/repositories/${owner}/${repo}/branches/${branchName}/workflows`, options: options });
+    }
+}
+exports.IonosSpaceGithubApiClient = IonosSpaceGithubApiClient;
+class IonosSpaceDeploymentApiClient {
+    constructor(httpClient) {
+        this.httpClient = httpClient;
+    }
+    /**
+     * HTTP POST /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}/deployments
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceDeploymentApi.createDeployment
+     */
+    createDeployment(accountId, projectId, branchId, deployment, options) {
+        return this.httpClient.request({ method: "POST", url: uriEncoding `v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}/deployments`, data: deployment, options: options });
+    }
+    /**
+     * HTTP GET /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}/deployments
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceDeploymentApi.getDeployments
+     */
+    getDeployments(accountId, projectId, branchId, queryParams, options) {
+        return this.httpClient.request({ method: "GET", url: uriEncoding `v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}/deployments`, queryParams: queryParams, options: options });
+    }
+    /**
+     * HTTP DELETE /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}/deployments/{deploymentId}
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceDeploymentApi.deleteDeployment
+     */
+    deleteDeployment(accountId, projectId, branchId, deploymentId, options) {
+        return this.httpClient.request({ method: "DELETE", url: uriEncoding `v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}/deployments/${deploymentId}`, options: options });
+    }
+    /**
+     * HTTP GET /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}/deployments/{deploymentId}
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceDeploymentApi.getDeployment
+     */
+    getDeployment(accountId, projectId, branchId, deploymentId, options) {
+        return this.httpClient.request({ method: "GET", url: uriEncoding `v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}/deployments/${deploymentId}`, options: options });
+    }
+    /**
+     * HTTP PATCH /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}/deployments/{deploymentId}
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceDeploymentApi.patchDeployment
+     */
+    patchDeployment(accountId, projectId, branchId, deploymentId, deploymentPatch, options) {
+        return this.httpClient.request({ method: "PATCH", url: uriEncoding `v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}/deployments/${deploymentId}`, data: deploymentPatch, options: options });
+    }
+    /**
+     * HTTP POST /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}/deployments/{deploymentId}/connect-domain
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceDeploymentApi.connectDomain
+     */
+    connectDomain(accountId, projectId, branchId, deploymentId, connectDomain, options) {
+        return this.httpClient.request({ method: "POST", url: uriEncoding `v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}/deployments/${deploymentId}/connect-domain`, data: connectDomain, options: options });
+    }
+    /**
+     * HTTP POST /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}/deployments/{deploymentId}/databases/{databaseId}/phpmyadmin-sessions
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceDeploymentApi.createPhpMyAdminSession
+     */
+    createPhpMyAdminSession(accountId, projectId, branchId, deploymentId, databaseId, options) {
+        return this.httpClient.request({ method: "POST", url: uriEncoding `v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}/deployments/${deploymentId}/databases/${databaseId}/phpmyadmin-sessions`, options: options });
+    }
+    /**
+     * HTTP POST /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}/deployments/{deploymentId}/disconnect-domain
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceDeploymentApi.disconnectDomain
+     */
+    disconnectDomain(accountId, projectId, branchId, deploymentId, options) {
+        return this.httpClient.request({ method: "POST", url: uriEncoding `v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}/deployments/${deploymentId}/disconnect-domain`, options: options });
+    }
+    /**
+     * HTTP PUT /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}/deployments/{deploymentId}/state
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceDeploymentApi.updateDeploymentState
+     */
+    updateDeploymentState(accountId, projectId, branchId, deploymentId, deploymentState, options) {
+        return this.httpClient.request({ method: "PUT", url: uriEncoding `v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}/deployments/${deploymentId}/state`, data: deploymentState, options: options });
+    }
+    /**
+     * HTTP PUT /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}/deployments/{deploymentId}/webspaces/{webspaceId}/cron-jobs
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceDeploymentApi.configureCronJobs
+     */
+    configureCronJobs(accountId, projectId, branchId, deploymentId, webspaceId, cronJobs, options) {
+        return this.httpClient.request({ method: "PUT", url: uriEncoding `v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}/deployments/${deploymentId}/webspaces/${webspaceId}/cron-jobs`, data: cronJobs, options: options });
+    }
+    /**
+     * HTTP POST /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}/deployments/{deploymentId}/webspaces/{webspaceId}/directory-sessions
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceDeploymentApi.createDirectorySession
+     */
+    createDirectorySession(accountId, projectId, branchId, deploymentId, webspaceId, options) {
+        return this.httpClient.request({ method: "POST", url: uriEncoding `v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}/deployments/${deploymentId}/webspaces/${webspaceId}/directory-sessions`, options: options });
+    }
+}
+exports.IonosSpaceDeploymentApiClient = IonosSpaceDeploymentApiClient;
+var BranchChangeType;
+(function (BranchChangeType) {
+    BranchChangeType["CREATE"] = "CREATE";
+    BranchChangeType["DELETE"] = "DELETE";
+    BranchChangeType["PURGE"] = "PURGE";
+    BranchChangeType["UN_DELETE"] = "UN_DELETE";
+    BranchChangeType["BUILD_STATE"] = "BUILD_STATE";
+    BranchChangeType["WORKFLOW_PRESENT"] = "WORKFLOW_PRESENT";
+    BranchChangeType["DEPLOYMENT_STATE"] = "DEPLOYMENT_STATE";
+})(BranchChangeType = exports.BranchChangeType || (exports.BranchChangeType = {}));
+var ContractChangeType;
+(function (ContractChangeType) {
+    ContractChangeType["LOCK"] = "LOCK";
+    ContractChangeType["UNLOCK"] = "UNLOCK";
+    ContractChangeType["PROJECT_TYPES"] = "PROJECT_TYPES";
+    ContractChangeType["GITHUB_CONNECTION"] = "GITHUB_CONNECTION";
+})(ContractChangeType = exports.ContractChangeType || (exports.ContractChangeType = {}));
+var InstallationChangeType;
+(function (InstallationChangeType) {
+    InstallationChangeType["SUSPEND"] = "SUSPEND";
+    InstallationChangeType["UNSUSPEND"] = "UNSUSPEND";
+    InstallationChangeType["DELETE"] = "DELETE";
+})(InstallationChangeType = exports.InstallationChangeType || (exports.InstallationChangeType = {}));
+var ProjectChangeType;
+(function (ProjectChangeType) {
+    ProjectChangeType["CREATE"] = "CREATE";
+    ProjectChangeType["DELETE"] = "DELETE";
+    ProjectChangeType["PURGE"] = "PURGE";
+    ProjectChangeType["REPO_RENAME"] = "REPO_RENAME";
+    ProjectChangeType["PROJECT_TYPE"] = "PROJECT_TYPE";
+    ProjectChangeType["LOCK"] = "LOCK";
+    ProjectChangeType["UNLOCK"] = "UNLOCK";
+    ProjectChangeType["AUTOMATIC_DEPLOYMENT"] = "AUTOMATIC_DEPLOYMENT";
+    ProjectChangeType["LOSE_PERMISSION"] = "LOSE_PERMISSION";
+    ProjectChangeType["RESTORE_PERMISSION"] = "RESTORE_PERMISSION";
+    ProjectChangeType["DEFAULT_PHP_VERSION"] = "DEFAULT_PHP_VERSION";
+    ProjectChangeType["NAME"] = "NAME";
+})(ProjectChangeType = exports.ProjectChangeType || (exports.ProjectChangeType = {}));
+var TokenChangeType;
+(function (TokenChangeType) {
+    TokenChangeType["REVOKE"] = "REVOKE";
+})(TokenChangeType = exports.TokenChangeType || (exports.TokenChangeType = {}));
+var ProviderType;
+(function (ProviderType) {
+    ProviderType["GITHUB"] = "GITHUB";
+})(ProviderType = exports.ProviderType || (exports.ProviderType = {}));
+var DeploymentChangeType;
+(function (DeploymentChangeType) {
+    DeploymentChangeType["CREATE"] = "CREATE";
+    DeploymentChangeType["DELETE"] = "DELETE";
+    DeploymentChangeType["DEPLOYMENT_STATE"] = "DEPLOYMENT_STATE";
+    DeploymentChangeType["WEBSPACE"] = "WEBSPACE";
+    DeploymentChangeType["DATABASE"] = "DATABASE";
+    DeploymentChangeType["DOMAIN_CONNECT"] = "DOMAIN_CONNECT";
+    DeploymentChangeType["DOMAIN_DISCONNECT"] = "DOMAIN_DISCONNECT";
+    DeploymentChangeType["NAME"] = "NAME";
+})(DeploymentChangeType = exports.DeploymentChangeType || (exports.DeploymentChangeType = {}));
+var FrameworkType;
+(function (FrameworkType) {
+    FrameworkType["SSR"] = "SSR";
+    FrameworkType["SSG"] = "SSG";
+    FrameworkType["SPA"] = "SPA";
+    FrameworkType["PLAIN"] = "PLAIN";
+})(FrameworkType = exports.FrameworkType || (exports.FrameworkType = {}));
+var Feature;
+(function (Feature) {
+    Feature["PHP"] = "PHP";
+    Feature["MAIL"] = "MAIL";
+    Feature["DB"] = "DB";
+})(Feature = exports.Feature || (exports.Feature = {}));
+var AppAccessType;
+(function (AppAccessType) {
+    AppAccessType["READ"] = "READ";
+    AppAccessType["WRITE"] = "WRITE";
+})(AppAccessType = exports.AppAccessType || (exports.AppAccessType = {}));
+var DomainType;
+(function (DomainType) {
+    DomainType["MAIN"] = "MAIN";
+    DomainType["SUBDOMAIN"] = "SUBDOMAIN";
+    DomainType["XDOMAIN"] = "XDOMAIN";
+})(DomainType = exports.DomainType || (exports.DomainType = {}));
+var BuildState;
+(function (BuildState) {
+    BuildState["AWAITING_BUILD"] = "AWAITING_BUILD";
+    BuildState["SUCCESS"] = "SUCCESS";
+    BuildState["RUNNING"] = "RUNNING";
+    BuildState["FAILED"] = "FAILED";
+    BuildState["UNKNOWN"] = "UNKNOWN";
+})(BuildState = exports.BuildState || (exports.BuildState = {}));
+var BranchDeploymentStateType;
+(function (BranchDeploymentStateType) {
+    BranchDeploymentStateType["RUNNING"] = "RUNNING";
+    BranchDeploymentStateType["SUCCESS"] = "SUCCESS";
+    BranchDeploymentStateType["FAILED"] = "FAILED";
+    BranchDeploymentStateType["PARTLY_FAILED"] = "PARTLY_FAILED";
+})(BranchDeploymentStateType = exports.BranchDeploymentStateType || (exports.BranchDeploymentStateType = {}));
+var DeploymentState;
+(function (DeploymentState) {
+    DeploymentState["IN_CREATION"] = "IN_CREATION";
+    DeploymentState["CREATED"] = "CREATED";
+    DeploymentState["QUEUED"] = "QUEUED";
+    DeploymentState["RUNNING"] = "RUNNING";
+    DeploymentState["SUCCESS"] = "SUCCESS";
+    DeploymentState["FAILED"] = "FAILED";
+})(DeploymentState = exports.DeploymentState || (exports.DeploymentState = {}));
+var WebspaceState;
+(function (WebspaceState) {
+    WebspaceState["IN_CREATION"] = "IN_CREATION";
+    WebspaceState["CREATED"] = "CREATED";
+    WebspaceState["DELETED"] = "DELETED";
+})(WebspaceState = exports.WebspaceState || (exports.WebspaceState = {}));
+var DatabaseState;
+(function (DatabaseState) {
+    DatabaseState["IN_CREATION"] = "IN_CREATION";
+    DatabaseState["CREATED"] = "CREATED";
+    DatabaseState["DELETED"] = "DELETED";
+})(DatabaseState = exports.DatabaseState || (exports.DatabaseState = {}));
+var Type;
+(function (Type) {
+    Type["DEPENDENCY"] = "DEPENDENCY";
+    Type["FILE_CONTENT"] = "FILE_CONTENT";
+    Type["FILE"] = "FILE";
+    Type["LANGUAGE"] = "LANGUAGE";
+})(Type = exports.Type || (exports.Type = {}));
+var GithubIdentityType;
+(function (GithubIdentityType) {
+    GithubIdentityType["USER"] = "USER";
+    GithubIdentityType["ORGANIZATION"] = "ORGANIZATION";
+})(GithubIdentityType = exports.GithubIdentityType || (exports.GithubIdentityType = {}));
+var DetectionBaseType;
+(function (DetectionBaseType) {
+    DetectionBaseType["FRAMEWORK"] = "FRAMEWORK";
+    DetectionBaseType["IONOS_YAML"] = "IONOS_YAML";
+})(DetectionBaseType = exports.DetectionBaseType || (exports.DetectionBaseType = {}));
+function uriEncoding(template, ...substitutions) {
+    let result = "";
+    for (let i = 0; i < substitutions.length; i++) {
+        result += template[i];
+        result += encodeURIComponent(substitutions[i]);
+    }
+    result += template[template.length - 1];
+    return result;
+}
+// Added by 'AxiosClientExtension' extension
+const axios_1 = __importDefault(__nccwpck_require__(6545));
+class AxiosHttpClient {
+    constructor(axios) {
+        this.axios = axios;
+    }
+    request(requestConfig) {
+        function assign(target, source) {
+            if (source != undefined) {
+                for (const key in source) {
+                    if (source.hasOwnProperty(key)) {
+                        target[key] = source[key];
+                    }
+                }
+            }
+            return target;
+        }
+        const config = {};
+        config.method = requestConfig.method; // `string` in axios 0.16.0, `Method` in axios 0.19.0
+        config.url = requestConfig.url;
+        config.params = requestConfig.queryParams;
+        config.data = requestConfig.data;
+        assign(config, requestConfig.options);
+        const copyFn = requestConfig.copyFn;
+        const axiosResponse = this.axios.request(config);
+        return axiosResponse.then(axiosResponse => {
+            if (copyFn && axiosResponse.data) {
+                axiosResponse.originalData = axiosResponse.data;
+                axiosResponse.data = copyFn(axiosResponse.data);
+            }
+            return axiosResponse;
+        });
+    }
+}
+class AxiosIonosSpaceUserSessionApiClient extends IonosSpaceUserSessionApiClient {
+    constructor(baseURL, axiosInstance = axios_1.default.create()) {
+        axiosInstance.defaults.baseURL = baseURL;
+        super(new AxiosHttpClient(axiosInstance));
+    }
+}
+exports.AxiosIonosSpaceUserSessionApiClient = AxiosIonosSpaceUserSessionApiClient;
+class AxiosIonosSpaceTokensApiClient extends IonosSpaceTokensApiClient {
+    constructor(baseURL, axiosInstance = axios_1.default.create()) {
+        axiosInstance.defaults.baseURL = baseURL;
+        super(new AxiosHttpClient(axiosInstance));
+    }
+}
+exports.AxiosIonosSpaceTokensApiClient = AxiosIonosSpaceTokensApiClient;
+class AxiosIonosSpaceAccountInfoApiClient extends IonosSpaceAccountInfoApiClient {
+    constructor(baseURL, axiosInstance = axios_1.default.create()) {
+        axiosInstance.defaults.baseURL = baseURL;
+        super(new AxiosHttpClient(axiosInstance));
+    }
+}
+exports.AxiosIonosSpaceAccountInfoApiClient = AxiosIonosSpaceAccountInfoApiClient;
+class AxiosIonosSpaceFrameworkApiClient extends IonosSpaceFrameworkApiClient {
+    constructor(baseURL, axiosInstance = axios_1.default.create()) {
+        axiosInstance.defaults.baseURL = baseURL;
+        super(new AxiosHttpClient(axiosInstance));
+    }
+}
+exports.AxiosIonosSpaceFrameworkApiClient = AxiosIonosSpaceFrameworkApiClient;
+class AxiosIonosSpaceProjectApiClient extends IonosSpaceProjectApiClient {
+    constructor(baseURL, axiosInstance = axios_1.default.create()) {
+        axiosInstance.defaults.baseURL = baseURL;
+        super(new AxiosHttpClient(axiosInstance));
+    }
+}
+exports.AxiosIonosSpaceProjectApiClient = AxiosIonosSpaceProjectApiClient;
+class AxiosIonosSpaceEventsApiClient extends IonosSpaceEventsApiClient {
+    constructor(baseURL, axiosInstance = axios_1.default.create()) {
+        axiosInstance.defaults.baseURL = baseURL;
+        super(new AxiosHttpClient(axiosInstance));
+    }
+}
+exports.AxiosIonosSpaceEventsApiClient = AxiosIonosSpaceEventsApiClient;
+class AxiosIonosSpaceBranchApiClient extends IonosSpaceBranchApiClient {
+    constructor(baseURL, axiosInstance = axios_1.default.create()) {
+        axiosInstance.defaults.baseURL = baseURL;
+        super(new AxiosHttpClient(axiosInstance));
+    }
+}
+exports.AxiosIonosSpaceBranchApiClient = AxiosIonosSpaceBranchApiClient;
+class AxiosIonosSpaceDetectionApiClient extends IonosSpaceDetectionApiClient {
+    constructor(baseURL, axiosInstance = axios_1.default.create()) {
+        axiosInstance.defaults.baseURL = baseURL;
+        super(new AxiosHttpClient(axiosInstance));
+    }
+}
+exports.AxiosIonosSpaceDetectionApiClient = AxiosIonosSpaceDetectionApiClient;
+class AxiosIonosSpaceAccountApiClient extends IonosSpaceAccountApiClient {
+    constructor(baseURL, axiosInstance = axios_1.default.create()) {
+        axiosInstance.defaults.baseURL = baseURL;
+        super(new AxiosHttpClient(axiosInstance));
+    }
+}
+exports.AxiosIonosSpaceAccountApiClient = AxiosIonosSpaceAccountApiClient;
+class AxiosIonosSpaceMetadataApiClient extends IonosSpaceMetadataApiClient {
+    constructor(baseURL, axiosInstance = axios_1.default.create()) {
+        axiosInstance.defaults.baseURL = baseURL;
+        super(new AxiosHttpClient(axiosInstance));
+    }
+}
+exports.AxiosIonosSpaceMetadataApiClient = AxiosIonosSpaceMetadataApiClient;
+class AxiosIonosSpaceGithubWebhookApiClient extends IonosSpaceGithubWebhookApiClient {
+    constructor(baseURL, axiosInstance = axios_1.default.create()) {
+        axiosInstance.defaults.baseURL = baseURL;
+        super(new AxiosHttpClient(axiosInstance));
+    }
+}
+exports.AxiosIonosSpaceGithubWebhookApiClient = AxiosIonosSpaceGithubWebhookApiClient;
+class AxiosIonosSpaceArtifactApiClient extends IonosSpaceArtifactApiClient {
+    constructor(baseURL, axiosInstance = axios_1.default.create()) {
+        axiosInstance.defaults.baseURL = baseURL;
+        super(new AxiosHttpClient(axiosInstance));
+    }
+}
+exports.AxiosIonosSpaceArtifactApiClient = AxiosIonosSpaceArtifactApiClient;
+class AxiosIonosSpaceProjectTypesApiClient extends IonosSpaceProjectTypesApiClient {
+    constructor(baseURL, axiosInstance = axios_1.default.create()) {
+        axiosInstance.defaults.baseURL = baseURL;
+        super(new AxiosHttpClient(axiosInstance));
+    }
+}
+exports.AxiosIonosSpaceProjectTypesApiClient = AxiosIonosSpaceProjectTypesApiClient;
+class AxiosIonosSpaceGithubApiClient extends IonosSpaceGithubApiClient {
+    constructor(baseURL, axiosInstance = axios_1.default.create()) {
+        axiosInstance.defaults.baseURL = baseURL;
+        super(new AxiosHttpClient(axiosInstance));
+    }
+}
+exports.AxiosIonosSpaceGithubApiClient = AxiosIonosSpaceGithubApiClient;
+class AxiosIonosSpaceDeploymentApiClient extends IonosSpaceDeploymentApiClient {
+    constructor(baseURL, axiosInstance = axios_1.default.create()) {
+        axiosInstance.defaults.baseURL = baseURL;
+        super(new AxiosHttpClient(axiosInstance));
+    }
+}
+exports.AxiosIonosSpaceDeploymentApiClient = AxiosIonosSpaceDeploymentApiClient;
+
+
+/***/ }),
+
 /***/ 2724:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
 
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
 };
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const axios_1 = __importDefault(__nccwpck_require__(6545));
-const retry_1 = __importDefault(__nccwpck_require__(8874));
 const axios_retry_1 = __importDefault(__nccwpck_require__(9179));
-class DeployNowApi {
+const qs = __importStar(__nccwpck_require__(2760));
+const api_1 = __nccwpck_require__(8999);
+class DeployNowClient {
     constructor(serviceHost, apiKey) {
         (0, axios_retry_1.default)(axios_1.default, { retries: 3 });
-        this.instance = axios_1.default.create({
-            baseURL: `https://${serviceHost}`,
-            timeout: 10000,
-            headers: { Authorization: `API-Key ${apiKey}` },
-        });
-    }
-    getProject(projectId) {
-        return this.instance.get(`/v3/accounts/me/projects/${projectId}`).then((res) => res.data);
-    }
-    findBranch(projectId, branchName) {
-        return new retry_1.default((retry, lastRetry) => __awaiter(this, void 0, void 0, function* () {
-            return yield this.instance.get(`/v3/accounts/me/projects/${projectId}/branches?name=${branchName}`).then((res) => {
-                const branches = res.data.values.filter((branch) => branch.name === branchName);
-                if (branches.length === 0) {
-                    if (lastRetry) {
-                        throw new Error(`Branch ${branchName} not found in DeployNow`);
-                    }
-                    else {
-                        return retry();
-                    }
-                }
-                return branches[0];
-            });
-        }), { count: 5 }).run();
-    }
-    getBranch(projectId, branchId) {
-        return new retry_1.default((retry, lastRetry) => __awaiter(this, void 0, void 0, function* () {
-            return yield this.instance.get(`/v3/accounts/me/projects/${projectId}/branches/${branchId}`).then((res) => {
-                const branch = res.data;
-                if (branch.webSpace === null || branch.webSpace === undefined || branch.webSpace.state !== 'CREATED') {
-                    if (lastRetry) {
-                        throw new Error('The setup of this DeployNow project is not fully completed yet');
-                    }
-                    else {
-                        return retry();
-                    }
-                }
-                return branch;
-            });
-        }), { count: 5 }).run();
+        const axiosClientConfig = () => [
+            `https://${serviceHost}`,
+            axios_1.default.create({
+                paramsSerializer: (params) => {
+                    return qs.stringify(params, { arrayFormat: 'repeat' });
+                },
+                timeout: 10000,
+                headers: { Authorization: `API-Key ${apiKey}` },
+            }),
+        ];
+        this.branchApi = new api_1.AxiosIonosSpaceBranchApiClient(...axiosClientConfig());
+        this.deploymentApi = new api_1.AxiosIonosSpaceDeploymentApiClient(...axiosClientConfig());
     }
 }
-exports["default"] = DeployNowApi;
+exports["default"] = DeployNowClient;
 
 
 /***/ }),
@@ -15933,32 +19970,51 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.retrieveProjectInfo = void 0;
 const deployNow_1 = __importDefault(__nccwpck_require__(2724));
+const retry_1 = __importDefault(__nccwpck_require__(8874));
 const core_1 = __nccwpck_require__(2186);
 function retrieveProjectInfo(configuration) {
     return __awaiter(this, void 0, void 0, function* () {
-        const deployNowApi = new deployNow_1.default(configuration.serviceHost, configuration.apiKey);
-        const project = yield deployNowApi.getProject(configuration.projectId);
-        const isProductionBranch = project.productionBranch.name === configuration.branchName;
-        const branchOverview = yield (() => __awaiter(this, void 0, void 0, function* () {
-            if (isProductionBranch) {
-                return project.productionBranch;
-            }
-            else {
-                return yield deployNowApi.findBranch(configuration.projectId, configuration.branchName);
-            }
-        }))();
-        if (!branchOverview.deploymentEnabled) {
+        const client = new deployNow_1.default(configuration.serviceHost, configuration.apiKey);
+        const branch = yield new retry_1.default((retry, lastRetry) => __awaiter(this, void 0, void 0, function* () {
+            return yield client.branchApi
+                .getBranches('me', configuration.projectId, { name: configuration.branchName })
+                .then(({ data }) => {
+                if (data.total === 0 || data.values[0].deploymentCount === 0) {
+                    if (lastRetry) {
+                        if (data.total === 0) {
+                            throw new Error(`Branch ${configuration.branchName} not found in DeployNow`);
+                        }
+                        return data.values[0];
+                    }
+                    else {
+                        return retry();
+                    }
+                }
+                return data.values[0];
+            });
+        }), { count: 5 }).run();
+        if (branch.deploymentCount == 0) {
             (0, core_1.warning)('The deployment is disabled for this branch');
-            return { 'deployment-enabled': false };
+            return {
+                'deployment-enabled': false,
+            };
         }
-        const branch = yield deployNowApi.getBranch(configuration.projectId, branchOverview.id);
+        if (branch.deploymentCount > 1) {
+            throw new Error("This action doesn't support multi deployments");
+        }
+        const deployments = yield client.deploymentApi
+            .getDeployments('me', configuration.projectId, branch.id)
+            .then(({ data }) => data.values);
+        const deployment = yield client.deploymentApi
+            .getDeployment('me', configuration.projectId, branch.id, deployments[0].id)
+            .then(({ data }) => data);
         return {
-            'deployment-enabled': branch.deploymentEnabled,
+            'deployment-enabled': deployments.length === 1,
             'branch-id': branch.id,
-            'site-url': isProductionBranch ? `https://${project.domain}` : branch.webSpace.webSpace.siteUrl,
-            'remote-host': branch.webSpace.webSpace.sshHost,
-            'storage-quota': branch.webSpace.webSpace.quota.storageQuota,
-            'bootstrap-deploy': branch.lastDeploymentDate == null,
+            'site-url': `https://${deployment.domain.name}`,
+            'remote-host': deployment.webspace.webspace.sshHost,
+            'storage-quota': deployment.webspace.webspace.quota.storageQuota,
+            'bootstrap-deploy': deployment.state.lastDeployedDate == null,
         };
     });
 }
