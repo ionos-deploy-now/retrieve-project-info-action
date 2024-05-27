@@ -25,7 +25,7 @@ export async function retrieveProjectInfo(configuration: Types): Promise<Project
           }
           return data.values[0];
         }),
-    { count: 5 }
+    { count: 5 },
   ).run();
 
   if (branch.deploymentCount == 0) {

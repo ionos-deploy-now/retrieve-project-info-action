@@ -85,7 +85,7 @@ describe('Test main action function', () => {
     sinon.replace(AxiosIonosSpaceBranchApiClient.prototype, 'getBranches', branchesStub);
 
     retrieveProjectInfo({ apiKey: '', branchName: 'staging', projectId, serviceHost: '' }).should.be.rejectedWith(
-      "This action doesn't support multi deployments"
+      "This action doesn't support multi deployments",
     );
 
     expect(branchesStub.calledOnceWith('me', projectId, { name: 'staging' })).to.be.true;
@@ -101,7 +101,7 @@ describe('Test main action function', () => {
     sinon.replace(AxiosIonosSpaceBranchApiClient.prototype, 'getBranches', branchesStub);
 
     retrieveProjectInfo({ apiKey: '', branchName: 'staging', projectId, serviceHost: '' }).should.be.rejectedWith(
-      'Branch staging not found in DeployNow'
+      'Branch staging not found in DeployNow',
     );
 
     expect(branchesStub.calledWithExactly('me', projectId, { name: 'staging' })).to.be.true;
