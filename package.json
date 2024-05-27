@@ -12,9 +12,9 @@
     "@actions/core": "1.10.1",
     "@actions/github": "6.0.0",
     "@ionos-deploy-now/actions-core": "^1.1.0",
-    "axios": "^0.27.2",
-    "axios-retry": "^3.3.1",
-    "qs": "^6.11.0"
+    "axios": "^1.7.2",
+    "axios-retry": "^4.3.0",
+    "qs": "^6.12.1"
   },
   "devDependencies": {
     "@ionos-deploy-now/eslint-config-actions": "1.1.0",
