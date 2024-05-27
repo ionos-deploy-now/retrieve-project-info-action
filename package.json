@@ -19,19 +19,19 @@
   "devDependencies": {
     "@ionos-deploy-now/eslint-config-actions": "1.1.0",
     "@ionos-deploy-now/prettier-config-actions": "1.1.0",
-    "@types/chai": "^4.3.3",
-    "@types/chai-as-promised": "^7.1.5",
-    "@types/mocha": "^10.0.0",
-    "@types/node": "^18.11.0",
-    "@types/sinon": "^10.0.13",
-    "@vercel/ncc": "0.34.0",
-    "chai": "^4.3.6",
-    "chai-as-promised": "^7.1.1",
-    "mocha": "^10.1.0",
-    "sinon": "^14.0.1",
-    "ts-node": "^10.9.1",
+    "@types/chai": "^4.3.16",
+    "@types/chai-as-promised": "^7.1.8",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.12.12",
+    "@types/sinon": "^10.0.20",
+    "@vercel/ncc": "^0.38.1",
+    "chai": "^4.4.1",
+    "chai-as-promised": "^7.1.2",
+    "mocha": "^10.4.0",
+    "sinon": "^14.0.2",
+    "ts-node": "^10.9.2",
     "ts-sinon": "^2.0.2",
-    "typescript": "^4.8.4",
-    "uuid": "^9.0.0"
+    "typescript": "^5.4.5",
+    "uuid": "^9.0.1"
   }
 }
