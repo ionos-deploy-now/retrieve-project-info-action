@@ -3,6 +3,7 @@
   "version": "1.4.0",
   "scripts": {
     "lint": "eslint src --max-warnings=0 --ext .ts",
+    "lint-fix": "eslint src --max-warnings=0 --ext .ts --fix",
     "test": "mocha --require ts-node/register src/test/*.spec.ts",
     "build": "tsc",
     "release": "ncc build src/main/index.ts"
