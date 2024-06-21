@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 2.36.1070 on 2022-12-01 11:18:32.
+// Generated using typescript-generator version 2.36.1070 on 2024-05-13 07:35:24.
 
 export interface Event {
     occurrenceDate: Date;
@@ -8,15 +8,15 @@ export interface Event {
 
 export class BranchChange implements Event {
     occurrenceDate: Date;
-    type: BranchChangeType;
-    projectId: string;
     branchId: string;
+    projectId: string;
+    type: BranchChangeType;
 
     constructor(data: BranchChange) {
         this.occurrenceDate = data.occurrenceDate;
-        this.type = data.type;
-        this.projectId = data.projectId;
         this.branchId = data.branchId;
+        this.projectId = data.projectId;
+        this.type = data.type;
     }
 }
 
@@ -32,85 +32,85 @@ export class ContractChange implements Event {
 
 export class InstallationChange implements Event {
     occurrenceDate: Date;
-    type: InstallationChangeType;
     installationId: string;
+    type: InstallationChangeType;
 
     constructor(data: InstallationChange) {
         this.occurrenceDate = data.occurrenceDate;
-        this.type = data.type;
         this.installationId = data.installationId;
+        this.type = data.type;
     }
 }
 
 export class ProjectChange implements Event {
     occurrenceDate: Date;
-    type: ProjectChangeType;
     projectId: string;
+    type: ProjectChangeType;
 
     constructor(data: ProjectChange) {
         this.occurrenceDate = data.occurrenceDate;
-        this.type = data.type;
         this.projectId = data.projectId;
+        this.type = data.type;
     }
 }
 
 export class TokenChange implements Event {
     occurrenceDate: Date;
-    type: TokenChangeType;
     providerType: ProviderType;
+    type: TokenChangeType;
 
     constructor(data: TokenChange) {
         this.occurrenceDate = data.occurrenceDate;
-        this.type = data.type;
         this.providerType = data.providerType;
+        this.type = data.type;
     }
 }
 
 export class UserCreate implements Event {
     occurrenceDate: Date;
-    id: string;
-    username: string;
     expiryDate?: Date;
+    username: string;
+    id: string;
 
     constructor(data: UserCreate) {
         this.occurrenceDate = data.occurrenceDate;
-        this.id = data.id;
-        this.username = data.username;
         this.expiryDate = data.expiryDate;
+        this.username = data.username;
+        this.id = data.id;
     }
 }
 
 export class DeploymentChange implements Event {
     occurrenceDate: Date;
-    type: DeploymentChangeType;
-    projectId: string;
-    branchId: string;
     deploymentId: string;
+    branchId: string;
+    projectId: string;
+    type: DeploymentChangeType;
 
     constructor(data: DeploymentChange) {
         this.occurrenceDate = data.occurrenceDate;
-        this.type = data.type;
-        this.projectId = data.projectId;
-        this.branchId = data.branchId;
         this.deploymentId = data.deploymentId;
+        this.branchId = data.branchId;
+        this.projectId = data.projectId;
+        this.type = data.type;
     }
 }
 
 export class FeedbackInput {
-    type: string;
-    description: string;
-    summary: string;
-    errorId?: string;
-    affectedProjectId?: string;
     supportUserInvited?: boolean;
+    affectedProjectId?: string;
+    errorId?: string;
+    summary: string;
+    description: string;
+    type: string;
 
     constructor(data: FeedbackInput) {
-        this.type = data.type;
-        this.description = data.description;
-        this.summary = data.summary;
-        this.errorId = data.errorId;
-        this.affectedProjectId = data.affectedProjectId;
         this.supportUserInvited = data.supportUserInvited;
+        this.affectedProjectId = data.affectedProjectId;
+        this.errorId = data.errorId;
+        this.summary = data.summary;
+        this.description = data.description;
+        this.type = data.type;
     }
 }
 
@@ -123,66 +123,66 @@ export class DisconnectDomains {
 }
 
 export class DetailedAccount {
-    id: string;
-    projectTypes: ProjectTypeCount[];
     provisioningId: string;
     stackInstanceId: string;
-    market: string;
-    wa3Id?: string;
     softLockedDate?: Date;
     hardLockedDate?: Date;
     deletedDate?: Date;
     gitConnections: GitConnectionUnion[];
     createdDate: Date;
     lastChangedDate: Date;
+    market: string;
+    wa3Id?: string;
+    projectTypes: ProjectTypeCount[];
+    id: string;
 
     constructor(data: DetailedAccount) {
-        this.id = data.id;
-        this.projectTypes = data.projectTypes;
         this.provisioningId = data.provisioningId;
         this.stackInstanceId = data.stackInstanceId;
-        this.market = data.market;
-        this.wa3Id = data.wa3Id;
         this.softLockedDate = data.softLockedDate;
         this.hardLockedDate = data.hardLockedDate;
         this.deletedDate = data.deletedDate;
         this.gitConnections = data.gitConnections;
         this.createdDate = data.createdDate;
         this.lastChangedDate = data.lastChangedDate;
+        this.market = data.market;
+        this.wa3Id = data.wa3Id;
+        this.projectTypes = data.projectTypes;
+        this.id = data.id;
     }
 }
 
 export class UpsellInformation {
-    contractId: string;
     projectTypeShopLinks: Record<string, string>;
+    contractId: string;
 
     constructor(data: UpsellInformation) {
-        this.contractId = data.contractId;
         this.projectTypeShopLinks = data.projectTypeShopLinks;
+        this.contractId = data.contractId;
     }
 }
 
 export class AccountPatch {
-    welcomeShownPatch?: WelcomeShownPatch;
     feedbackTileShownPatch?: FeedbackTileShownPatch;
+    welcomeShownPatch?: WelcomeShownPatch;
 
     constructor(data: AccountPatch) {
-        this.welcomeShownPatch = data.welcomeShownPatch;
         this.feedbackTileShownPatch = data.feedbackTileShownPatch;
+        this.welcomeShownPatch = data.welcomeShownPatch;
     }
 }
 
 export class Account {
-    projectTypes: ProjectTypeCount[];
+    gitConnections: GitConnectionUnion[];
     showWelcome: boolean;
     showFeedbackTile: boolean;
-    gitConnections: GitConnectionUnion[];
+    projectTypes: ProjectTypeCount[];
 
     constructor(data: Account) {
-        this.projectTypes = data.projectTypes;
+        this.gitConnections = data.gitConnections;
         this.showWelcome = data.showWelcome;
         this.showFeedbackTile = data.showFeedbackTile;
-        this.gitConnections = data.gitConnections;
+        this.projectTypes = data.projectTypes;
     }
 }
 
@@ -237,28 +237,28 @@ export class BranchDeleteOperation {
 }
 
 export class Branch {
-    name: string;
-    id: string;
     productionBranch: boolean;
-    webUrl: string;
     workflowPresent: boolean;
-    deprecatedWorkflow?: boolean;
-    deleted: boolean;
     deploymentCount: number;
     buildState?: BranchBuildState;
     deploymentState?: BranchDeploymentState;
+    deprecatedWorkflow?: boolean;
+    webUrl: string;
+    deleted: boolean;
+    name: string;
+    id: string;
 
     constructor(data: Branch) {
-        this.name = data.name;
-        this.id = data.id;
         this.productionBranch = data.productionBranch;
-        this.webUrl = data.webUrl;
         this.workflowPresent = data.workflowPresent;
-        this.deprecatedWorkflow = data.deprecatedWorkflow;
-        this.deleted = data.deleted;
         this.deploymentCount = data.deploymentCount;
         this.buildState = data.buildState;
         this.deploymentState = data.deploymentState;
+        this.deprecatedWorkflow = data.deprecatedWorkflow;
+        this.webUrl = data.webUrl;
+        this.deleted = data.deleted;
+        this.name = data.name;
+        this.id = data.id;
     }
 }
 
@@ -279,318 +279,326 @@ export class BranchPatch {
 }
 
 export class DeploymentTriggerInput {
-    version?: string;
     onlyFailed: boolean;
+    version?: string;
 
     constructor(data: DeploymentTriggerInput) {
-        this.version = data.version;
         this.onlyFailed = data.onlyFailed;
+        this.version = data.version;
     }
 }
 
 export class ConnectDomainInput {
-    domain: string;
     force: boolean;
+    domain: string;
 
     constructor(data: ConnectDomainInput) {
-        this.domain = data.domain;
         this.force = data.force;
+        this.domain = data.domain;
     }
 }
 
 export class DeploymentInput {
-    name: string;
     domain?: ConnectDomainInput;
+    name: string;
 
     constructor(data: DeploymentInput) {
-        this.name = data.name;
         this.domain = data.domain;
+        this.name = data.name;
     }
 }
 
 export class Deployment {
+    webspace: DetailedWebspace;
+    database?: DetailedDatabase;
+    domain: DeploymentDomain;
     name: string;
     id: string;
     state: DetailedDeploymentState;
-    domain: DeploymentDomain;
-    webspace: DetailedWebspace;
-    database?: DetailedDatabase;
 
     constructor(data: Deployment) {
+        this.webspace = data.webspace;
+        this.database = data.database;
+        this.domain = data.domain;
         this.name = data.name;
         this.id = data.id;
         this.state = data.state;
-        this.domain = data.domain;
-        this.webspace = data.webspace;
-        this.database = data.database;
     }
 }
 
 export class DirectorySessionToken {
-    sessionId: string;
     expireAt: Date;
+    sessionId: string;
 
     constructor(data: DirectorySessionToken) {
-        this.sessionId = data.sessionId;
         this.expireAt = data.expireAt;
+        this.sessionId = data.sessionId;
     }
 }
 
 export class PhpMyAdminSession {
-    url: string;
     expireAt: Date;
+    url: string;
 
     constructor(data: PhpMyAdminSession) {
-        this.url = data.url;
         this.expireAt = data.expireAt;
+        this.url = data.url;
     }
 }
 
 export class DeploymentPatch {
     phpVersionPatch?: DeploymentPhpVersionPatch;
+    deploymentRootPathPatch?: DeploymentRootPathPatch;
     namePatch?: DeploymentNamePatch;
 
     constructor(data: DeploymentPatch) {
         this.phpVersionPatch = data.phpVersionPatch;
+        this.deploymentRootPathPatch = data.deploymentRootPathPatch;
         this.namePatch = data.namePatch;
     }
 }
 
 export class DeploymentStateInput {
-    state: string;
     externalId: string;
+    state: string;
 
     constructor(data: DeploymentStateInput) {
-        this.state = data.state;
         this.externalId = data.externalId;
+        this.state = data.state;
     }
 }
 
 export class BuildStepCompletionInput {
-    repository: RepositoryInputUnion;
     buildStepName: string;
+    repository: RepositoryInputUnion;
 
     constructor(data: BuildStepCompletionInput) {
-        this.repository = data.repository;
         this.buildStepName = data.buildStepName;
+        this.repository = data.repository;
     }
 }
 
 export class BuildStep {
+    commandSuggestions: string[];
+    buildTool?: BuildTool;
+    commands: string[];
+    variables: Record<string, string>;
+    complete: boolean;
     runtime?: Runtime;
     name: string;
     displayName: string;
-    complete: boolean;
-    buildTool?: BuildTool;
-    commands: string[];
-    commandSuggestions: string[];
-    variables: Record<string, string>;
 
     constructor(data: BuildStep) {
+        this.commandSuggestions = data.commandSuggestions;
+        this.buildTool = data.buildTool;
+        this.commands = data.commands;
+        this.variables = data.variables;
+        this.complete = data.complete;
         this.runtime = data.runtime;
         this.name = data.name;
         this.displayName = data.displayName;
-        this.complete = data.complete;
-        this.buildTool = data.buildTool;
-        this.commands = data.commands;
-        this.commandSuggestions = data.commandSuggestions;
-        this.variables = data.variables;
     }
 }
 
 export class TemplateFileCompletionInput {
-    path: string;
-    repository: RepositoryInputUnion;
-    sourceFile?: string;
-    templateCompletionType: string;
     databaseEnabled?: boolean;
     mailEnabled?: boolean;
+    templateCompletionType: string;
+    sourceFile?: string;
+    repository: RepositoryInputUnion;
+    path: string;
 
     constructor(data: TemplateFileCompletionInput) {
-        this.path = data.path;
-        this.repository = data.repository;
-        this.sourceFile = data.sourceFile;
-        this.templateCompletionType = data.templateCompletionType;
         this.databaseEnabled = data.databaseEnabled;
         this.mailEnabled = data.mailEnabled;
+        this.templateCompletionType = data.templateCompletionType;
+        this.sourceFile = data.sourceFile;
+        this.repository = data.repository;
+        this.path = data.path;
     }
 }
 
 export class TemplateFile {
+    completionType: string;
     content: string;
     path: string;
-    completionType: string;
 
     constructor(data: TemplateFile) {
+        this.completionType = data.completionType;
         this.content = data.content;
         this.path = data.path;
-        this.completionType = data.completionType;
     }
 }
 
 export class DetectionInput {
-    repository: RepositoryInputUnion;
     frameworkId?: string;
+    repository: RepositoryInputUnion;
 
     constructor(data: DetectionInput) {
-        this.repository = data.repository;
         this.frameworkId = data.frameworkId;
+        this.repository = data.repository;
     }
 }
 
 export class FrameworkDefinitionInput {
-    name: string;
-    type: string;
-    logoUrl: string;
-    detections: DetectionUnion[];
     buildSteps: BuildStepDefinition[];
     deployStep: DeployStepDefinition;
-    supported: SupportedInput;
     requiredFeatures: string[];
+    detections: DetectionUnion[];
+    domainRootPath: string;
     templateFiles: TemplateFileDefinition[];
+    supported: SupportedInput;
+    logoUrl: string;
+    name: string;
+    type: string;
 
     constructor(data: FrameworkDefinitionInput) {
-        this.name = data.name;
-        this.type = data.type;
-        this.logoUrl = data.logoUrl;
-        this.detections = data.detections;
         this.buildSteps = data.buildSteps;
         this.deployStep = data.deployStep;
-        this.supported = data.supported;
         this.requiredFeatures = data.requiredFeatures;
+        this.detections = data.detections;
+        this.domainRootPath = data.domainRootPath;
         this.templateFiles = data.templateFiles;
+        this.supported = data.supported;
+        this.logoUrl = data.logoUrl;
+        this.name = data.name;
+        this.type = data.type;
     }
 }
 
 export class FrameworkDefinition {
+    buildSteps: BuildStepDefinition[];
+    deployStep: DeployStepDefinition;
+    requiredFeatures: Feature[];
+    detections: DetectionUnion[];
+    domainRootPath: string;
+    templateFiles: TemplateFileDefinition[];
+    supported: Supported;
+    logoUrl: string;
     name: string;
     id: string;
     type: FrameworkType;
-    logoUrl: string;
-    detections: DetectionUnion[];
-    buildSteps: BuildStepDefinition[];
-    deployStep: DeployStepDefinition;
-    supported: Supported;
-    requiredFeatures: Feature[];
-    templateFiles: TemplateFileDefinition[];
 
     constructor(data: FrameworkDefinition) {
+        this.buildSteps = data.buildSteps;
+        this.deployStep = data.deployStep;
+        this.requiredFeatures = data.requiredFeatures;
+        this.detections = data.detections;
+        this.domainRootPath = data.domainRootPath;
+        this.templateFiles = data.templateFiles;
+        this.supported = data.supported;
+        this.logoUrl = data.logoUrl;
         this.name = data.name;
         this.id = data.id;
         this.type = data.type;
-        this.logoUrl = data.logoUrl;
-        this.detections = data.detections;
-        this.buildSteps = data.buildSteps;
-        this.deployStep = data.deployStep;
-        this.supported = data.supported;
-        this.requiredFeatures = data.requiredFeatures;
-        this.templateFiles = data.templateFiles;
     }
 }
 
 export class InstallationInput {
-    code: string;
     externalId: number;
+    code: string;
 
     constructor(data: InstallationInput) {
-        this.code = data.code;
         this.externalId = data.externalId;
+        this.code = data.code;
     }
 }
 
 export class Installation {
-    id: string;
-    account: GithubIdentity;
     externalId: string;
-    suspended: boolean;
     necessaryPermissions: boolean;
     missingPermissions: Record<string, AppAccessType>;
+    suspended: boolean;
+    account: GithubIdentity;
+    id: string;
 
     constructor(data: Installation) {
-        this.id = data.id;
-        this.account = data.account;
         this.externalId = data.externalId;
-        this.suspended = data.suspended;
         this.necessaryPermissions = data.necessaryPermissions;
         this.missingPermissions = data.missingPermissions;
+        this.suspended = data.suspended;
+        this.account = data.account;
+        this.id = data.id;
     }
 }
 
 export class ProjectInput {
-    projectType: string;
-    projectName: string;
     databaseEnabled: boolean;
-    buildSteps: BuildStepInput[];
-    templateStep?: TemplateStepInput;
-    deployStep: DeployStepInput;
-    sourceRepository?: RepositoryInputUnion;
-    destinationRepository: DestinationRepositoryInput;
     automaticDeploymentEnabled: boolean;
-    overwriteWorkflow?: boolean;
+    buildSteps: BuildStepInput[];
+    runtimeStep?: RuntimeStepInput;
+    deployStep: DeployStepInput;
+    destinationRepository: DestinationRepositoryInput;
     mailAccountEnabled: boolean;
     visitorStatisticsEnabled: boolean;
+    sourceRepository?: RepositoryInputUnion;
+    overwriteWorkflow?: boolean;
     defaultPhpVersion?: string;
+    projectName: string;
+    projectType: string;
 
     constructor(data: ProjectInput) {
-        this.projectType = data.projectType;
-        this.projectName = data.projectName;
         this.databaseEnabled = data.databaseEnabled;
-        this.buildSteps = data.buildSteps;
-        this.templateStep = data.templateStep;
-        this.deployStep = data.deployStep;
-        this.sourceRepository = data.sourceRepository;
-        this.destinationRepository = data.destinationRepository;
         this.automaticDeploymentEnabled = data.automaticDeploymentEnabled;
-        this.overwriteWorkflow = data.overwriteWorkflow;
+        this.buildSteps = data.buildSteps;
+        this.runtimeStep = data.runtimeStep;
+        this.deployStep = data.deployStep;
+        this.destinationRepository = data.destinationRepository;
         this.mailAccountEnabled = data.mailAccountEnabled;
         this.visitorStatisticsEnabled = data.visitorStatisticsEnabled;
+        this.sourceRepository = data.sourceRepository;
+        this.overwriteWorkflow = data.overwriteWorkflow;
         this.defaultPhpVersion = data.defaultPhpVersion;
+        this.projectName = data.projectName;
+        this.projectType = data.projectType;
     }
 }
 
 export class Project {
-    name: string;
-    id: string;
-    locked: boolean;
     productionBranchId: string;
-    domains: string[];
-    projectType: string;
-    providerType: ProviderType;
-    lastChangedDate: Date;
-    deleted: boolean;
-    permissionLost: boolean;
-    gitRepository: GitRepository;
     productionDeploymentCount: number;
     stagingDeploymentCount: number;
     maxStagingDeploymentCount: number;
     automaticDeploymentEnabled: boolean;
-    defaultPhpVersion?: string;
-    databaseSettings?: DatabaseSettings;
+    defaultDomainRootPath: string;
     visitorStatisticsEnabled: boolean;
+    defaultPhpVersion?: string;
+    permissionLost: boolean;
+    gitRepository: GitRepository;
+    databaseSettings?: DatabaseSettings;
     spawningEnabled: boolean;
+    lastChangedDate: Date;
     siteUrls: string[];
+    deleted: boolean;
+    providerType: ProviderType;
+    projectType: string;
+    domains: string[];
+    name: string;
+    id: string;
+    locked: boolean;
 
     constructor(data: Project) {
-        this.name = data.name;
-        this.id = data.id;
-        this.locked = data.locked;
         this.productionBranchId = data.productionBranchId;
-        this.domains = data.domains;
-        this.projectType = data.projectType;
-        this.providerType = data.providerType;
-        this.lastChangedDate = data.lastChangedDate;
-        this.deleted = data.deleted;
-        this.permissionLost = data.permissionLost;
-        this.gitRepository = data.gitRepository;
         this.productionDeploymentCount = data.productionDeploymentCount;
         this.stagingDeploymentCount = data.stagingDeploymentCount;
         this.maxStagingDeploymentCount = data.maxStagingDeploymentCount;
         this.automaticDeploymentEnabled = data.automaticDeploymentEnabled;
-        this.defaultPhpVersion = data.defaultPhpVersion;
-        this.databaseSettings = data.databaseSettings;
+        this.defaultDomainRootPath = data.defaultDomainRootPath;
         this.visitorStatisticsEnabled = data.visitorStatisticsEnabled;
+        this.defaultPhpVersion = data.defaultPhpVersion;
+        this.permissionLost = data.permissionLost;
+        this.gitRepository = data.gitRepository;
+        this.databaseSettings = data.databaseSettings;
         this.spawningEnabled = data.spawningEnabled;
+        this.lastChangedDate = data.lastChangedDate;
         this.siteUrls = data.siteUrls;
+        this.deleted = data.deleted;
+        this.providerType = data.providerType;
+        this.projectType = data.projectType;
+        this.domains = data.domains;
+        this.name = data.name;
+        this.id = data.id;
+        this.locked = data.locked;
     }
 }
 
@@ -611,18 +619,20 @@ export class UpgradeInformation {
 }
 
 export class ProjectPatch {
-    projectNamePatch?: ProjectNamePatch;
     automaticDeploymentEnabledPatch?: AutomaticDeploymentEnabledPatch;
-    projectTypePatch?: ProjectTypePatch;
-    defaultPhpVersionPatch?: DefaultPhpVersionPatch;
+    defaultDomainRootPathPatch?: DefaultDomainRootPathPatch;
     visitorStatisticsEnabledPatch?: VisitorStatisticsEnabledPatch;
+    defaultPhpVersionPatch?: DefaultPhpVersionPatch;
+    projectNamePatch?: ProjectNamePatch;
+    projectTypePatch?: ProjectTypePatch;
 
     constructor(data: ProjectPatch) {
-        this.projectNamePatch = data.projectNamePatch;
         this.automaticDeploymentEnabledPatch = data.automaticDeploymentEnabledPatch;
-        this.projectTypePatch = data.projectTypePatch;
-        this.defaultPhpVersionPatch = data.defaultPhpVersionPatch;
+        this.defaultDomainRootPathPatch = data.defaultDomainRootPathPatch;
         this.visitorStatisticsEnabledPatch = data.visitorStatisticsEnabledPatch;
+        this.defaultPhpVersionPatch = data.defaultPhpVersionPatch;
+        this.projectNamePatch = data.projectNamePatch;
+        this.projectTypePatch = data.projectTypePatch;
     }
 }
 
@@ -635,56 +645,56 @@ export class DeploymentNameValidationRequest {
 }
 
 export class ProjectType {
-    name: string;
-    group: string;
-    availableFeatures: Feature[];
     stagingDeploymentCount: number;
-    resourceLevel: string;
     diskQuotaPerBranch: number;
     databaseQuotaPerBranch?: number;
+    resourceLevel: string;
     orderable: boolean;
+    availableFeatures: Feature[];
+    group: string;
+    name: string;
 
     constructor(data: ProjectType) {
-        this.name = data.name;
-        this.group = data.group;
-        this.availableFeatures = data.availableFeatures;
         this.stagingDeploymentCount = data.stagingDeploymentCount;
-        this.resourceLevel = data.resourceLevel;
         this.diskQuotaPerBranch = data.diskQuotaPerBranch;
         this.databaseQuotaPerBranch = data.databaseQuotaPerBranch;
+        this.resourceLevel = data.resourceLevel;
         this.orderable = data.orderable;
+        this.availableFeatures = data.availableFeatures;
+        this.group = data.group;
+        this.name = data.name;
     }
 }
 
 export class ProjectTypeInput {
-    name: string;
-    group: string;
-    availableFeatures: string[];
     stagingDeploymentCount: number;
-    resourceLevel: string;
     diskQuotaPerBranch: number;
     databaseQuotaPerBranch?: number;
+    resourceLevel: string;
     orderable: boolean;
+    availableFeatures: string[];
+    group: string;
+    name: string;
 
     constructor(data: ProjectTypeInput) {
-        this.name = data.name;
-        this.group = data.group;
-        this.availableFeatures = data.availableFeatures;
         this.stagingDeploymentCount = data.stagingDeploymentCount;
-        this.resourceLevel = data.resourceLevel;
         this.diskQuotaPerBranch = data.diskQuotaPerBranch;
         this.databaseQuotaPerBranch = data.databaseQuotaPerBranch;
+        this.resourceLevel = data.resourceLevel;
         this.orderable = data.orderable;
+        this.availableFeatures = data.availableFeatures;
+        this.group = data.group;
+        this.name = data.name;
     }
 }
 
 export class TokenAuthInput {
-    type: string;
     code: string;
+    type: string;
 
     constructor(data: TokenAuthInput) {
-        this.type = data.type;
         this.code = data.code;
+        this.type = data.type;
     }
 }
 
@@ -696,20 +706,20 @@ export class UserSession {
     }
 }
 
-export class ProjectTypeCount {
-    name: string;
-    total: number;
-    used: number;
-
-    constructor(data: ProjectTypeCount) {
-        this.name = data.name;
-        this.total = data.total;
-        this.used = data.used;
-    }
-}
-
 export interface GitConnection {
     type: "GITHUB";
+}
+
+export class ProjectTypeCount {
+    used: number;
+    total: number;
+    name: string;
+
+    constructor(data: ProjectTypeCount) {
+        this.used = data.used;
+        this.total = data.total;
+        this.name = data.name;
+    }
 }
 
 export class SortField {
@@ -737,50 +747,48 @@ export class Page<T> {
 }
 
 export class DetailedAccountOverview {
-    id: string;
     provisioningId: string;
     stackInstanceId: string;
-    market: string;
+    membershipType: MembershipType;
     softLockedDate?: Date;
     hardLockedDate?: Date;
     deletedDate?: Date;
     createdDate: Date;
     lastChangedDate: Date;
+    availableProjectsCount: number;
+    connectedGitProvider: ProviderType[];
     projectsCount: number;
+    welcomeShownDate?: Date;
+    market: string;
+    id: string;
 
     constructor(data: DetailedAccountOverview) {
-        this.id = data.id;
         this.provisioningId = data.provisioningId;
         this.stackInstanceId = data.stackInstanceId;
-        this.market = data.market;
+        this.membershipType = data.membershipType;
         this.softLockedDate = data.softLockedDate;
         this.hardLockedDate = data.hardLockedDate;
         this.deletedDate = data.deletedDate;
         this.createdDate = data.createdDate;
         this.lastChangedDate = data.lastChangedDate;
+        this.availableProjectsCount = data.availableProjectsCount;
+        this.connectedGitProvider = data.connectedGitProvider;
         this.projectsCount = data.projectsCount;
+        this.welcomeShownDate = data.welcomeShownDate;
+        this.market = data.market;
+        this.id = data.id;
     }
 }
 
 export class Domain {
+    inUse: boolean;
     name: string;
     type: DomainType;
-    inUse: boolean;
 
     constructor(data: Domain) {
+        this.inUse = data.inUse;
         this.name = data.name;
         this.type = data.type;
-        this.inUse = data.inUse;
-    }
-}
-
-export class WelcomeShownPatch implements Patch<Date> {
-    operation: string;
-    payload: Date;
-
-    constructor(data: WelcomeShownPatch) {
-        this.operation = data.operation;
-        this.payload = data.payload;
     }
 }
 
@@ -789,6 +797,16 @@ export class FeedbackTileShownPatch implements Patch<Date> {
     payload: Date;
 
     constructor(data: FeedbackTileShownPatch) {
+        this.operation = data.operation;
+        this.payload = data.payload;
+    }
+}
+
+export class WelcomeShownPatch implements Patch<Date> {
+    operation: string;
+    payload: Date;
+
+    constructor(data: WelcomeShownPatch) {
         this.operation = data.operation;
         this.payload = data.payload;
     }
@@ -813,76 +831,76 @@ export class CompletedPart {
 }
 
 export class BranchBuildState {
-    state?: BuildState;
-    url?: string;
     lastBuildDate?: Date;
+    url?: string;
+    state?: BuildState;
 
     constructor(data: BranchBuildState) {
-        this.state = data.state;
-        this.url = data.url;
         this.lastBuildDate = data.lastBuildDate;
+        this.url = data.url;
+        this.state = data.state;
     }
 }
 
 export class BranchDeploymentState {
-    state: BranchDeploymentStateType;
     lastDeploymentDate?: Date;
+    state: BranchDeploymentStateType;
 
     constructor(data: BranchDeploymentState) {
-        this.state = data.state;
         this.lastDeploymentDate = data.lastDeploymentDate;
+        this.state = data.state;
     }
 }
 
 export class BranchOverview {
-    name: string;
-    id: string;
     productionBranch: boolean;
-    webUrl: string;
     workflowPresent: boolean;
-    deprecatedWorkflow?: boolean;
-    deleted: boolean;
     deploymentCount: number;
     buildState?: BranchBuildState;
     deploymentState?: BranchDeploymentState;
+    deprecatedWorkflow?: boolean;
+    webUrl: string;
+    deleted: boolean;
+    name: string;
+    id: string;
 
     constructor(data: BranchOverview) {
-        this.name = data.name;
-        this.id = data.id;
         this.productionBranch = data.productionBranch;
-        this.webUrl = data.webUrl;
         this.workflowPresent = data.workflowPresent;
-        this.deprecatedWorkflow = data.deprecatedWorkflow;
-        this.deleted = data.deleted;
         this.deploymentCount = data.deploymentCount;
         this.buildState = data.buildState;
         this.deploymentState = data.deploymentState;
+        this.deprecatedWorkflow = data.deprecatedWorkflow;
+        this.webUrl = data.webUrl;
+        this.deleted = data.deleted;
+        this.name = data.name;
+        this.id = data.id;
     }
 }
 
 export class BuildJobLog {
-    name: string;
     steps: BuildStepLog[];
+    name: string;
 
     constructor(data: BuildJobLog) {
-        this.name = data.name;
         this.steps = data.steps;
+        this.name = data.name;
     }
 }
 
 export class BranchBuild {
+    createdDate: Date;
     name: string;
     id: string;
     state: BuildState;
     number: number;
-    createdDate: Date;
 
     constructor(data: BranchBuild) {
+        this.createdDate = data.createdDate;
         this.name = data.name;
         this.id = data.id;
         this.state = data.state;
         this.number = data.number;
-        this.createdDate = data.createdDate;
     }
 }
 
@@ -906,67 +924,67 @@ export class CronJob {
     }
 }
 
-export class DetailedDeploymentState {
-    state: DeploymentState;
-    url?: string;
-    lastDeployedDate?: Date;
-    externalId: string;
-    occurrenceTime: Date;
-
-    constructor(data: DetailedDeploymentState) {
-        this.state = data.state;
-        this.url = data.url;
-        this.lastDeployedDate = data.lastDeployedDate;
-        this.externalId = data.externalId;
-        this.occurrenceTime = data.occurrenceTime;
-    }
-}
-
-export class DeploymentDomain {
-    name: string;
-    customDomain: boolean;
-
-    constructor(data: DeploymentDomain) {
-        this.name = data.name;
-        this.customDomain = data.customDomain;
-    }
-}
-
 export class DetailedWebspace {
-    state: WebspaceState;
     webspace: Webspace;
+    state: WebspaceState;
 
     constructor(data: DetailedWebspace) {
-        this.state = data.state;
         this.webspace = data.webspace;
+        this.state = data.state;
     }
 }
 
 export class DetailedDatabase {
-    state: DatabaseState;
     database: Database;
+    state: DatabaseState;
 
     constructor(data: DetailedDatabase) {
-        this.state = data.state;
         this.database = data.database;
+        this.state = data.state;
+    }
+}
+
+export class DeploymentDomain {
+    customDomain: boolean;
+    name: string;
+
+    constructor(data: DeploymentDomain) {
+        this.customDomain = data.customDomain;
+        this.name = data.name;
+    }
+}
+
+export class DetailedDeploymentState {
+    externalId: string;
+    occurrenceTime: Date;
+    lastDeployedDate?: Date;
+    url?: string;
+    state: DeploymentState;
+
+    constructor(data: DetailedDeploymentState) {
+        this.externalId = data.externalId;
+        this.occurrenceTime = data.occurrenceTime;
+        this.lastDeployedDate = data.lastDeployedDate;
+        this.url = data.url;
+        this.state = data.state;
     }
 }
 
 export class DeploymentOverview {
+    webspace: WebspaceOverview;
+    database?: DatabaseOverview;
+    domain: DeploymentDomain;
     name: string;
     id: string;
     state: DetailedDeploymentState;
-    domain: DeploymentDomain;
-    webspace: WebspaceOverview;
-    database?: DatabaseOverview;
 
     constructor(data: DeploymentOverview) {
+        this.webspace = data.webspace;
+        this.database = data.database;
+        this.domain = data.domain;
         this.name = data.name;
         this.id = data.id;
         this.state = data.state;
-        this.domain = data.domain;
-        this.webspace = data.webspace;
-        this.database = data.database;
     }
 }
 
@@ -975,6 +993,16 @@ export class DeploymentPhpVersionPatch implements Patch<string> {
     payload: string;
 
     constructor(data: DeploymentPhpVersionPatch) {
+        this.operation = data.operation;
+        this.payload = data.payload;
+    }
+}
+
+export class DeploymentRootPathPatch implements Patch<string> {
+    operation: string;
+    payload: string;
+
+    constructor(data: DeploymentRootPathPatch) {
         this.operation = data.operation;
         this.payload = data.payload;
     }
@@ -994,16 +1022,6 @@ export interface RepositoryInput {
     type: "GITHUB";
 }
 
-export class Runtime {
-    name: string;
-    version?: string;
-
-    constructor(data: Runtime) {
-        this.name = data.name;
-        this.version = data.version;
-    }
-}
-
 export class BuildTool {
     name: string;
     version?: string;
@@ -1014,39 +1032,45 @@ export class BuildTool {
     }
 }
 
+export class Runtime {
+    name: string;
+    version?: string;
+
+    constructor(data: Runtime) {
+        this.name = data.name;
+        this.version = data.version;
+    }
+}
+
 export class DetectionResult {
     detectionBase: DetectionBase;
     buildSteps: BuildStep[];
-    templateStep?: TemplateStep;
+    runtimeStep?: RuntimeStep;
     deployStep: DeployStep;
-    supported: Supported;
     requiredFeatures: Feature[];
+    supported: Supported;
 
     constructor(data: DetectionResult) {
         this.detectionBase = data.detectionBase;
         this.buildSteps = data.buildSteps;
-        this.templateStep = data.templateStep;
+        this.runtimeStep = data.runtimeStep;
         this.deployStep = data.deployStep;
-        this.supported = data.supported;
         this.requiredFeatures = data.requiredFeatures;
+        this.supported = data.supported;
     }
 }
 
-export interface Detection {
-    type: "DEPENDENCY" | "FILE_CONTENT" | "FILE" | "LANGUAGE";
-}
-
 export class BuildStepDefinition {
-    name: string;
     commands: string[];
     variables: Record<string, Variable>;
     completionHints: Record<string, string>;
+    name: string;
 
     constructor(data: BuildStepDefinition) {
-        this.name = data.name;
         this.commands = data.commands;
         this.variables = data.variables;
         this.completionHints = data.completionHints;
+        this.name = data.name;
     }
 }
 
@@ -1064,16 +1088,8 @@ export class DeployStepDefinition {
     }
 }
 
-export class SupportedInput {
-    reason?: string;
-    supported: boolean;
-    compensation?: string;
-
-    constructor(data: SupportedInput) {
-        this.reason = data.reason;
-        this.supported = data.supported;
-        this.compensation = data.compensation;
-    }
+export interface Detection {
+    type: "DEPENDENCY" | "FILE_CONTENT" | "FILE" | "LANGUAGE";
 }
 
 export class TemplateFileDefinition {
@@ -1086,101 +1102,115 @@ export class TemplateFileDefinition {
     }
 }
 
+export class SupportedInput {
+    supported: boolean;
+    compensation?: string;
+    reason?: string;
+
+    constructor(data: SupportedInput) {
+        this.supported = data.supported;
+        this.compensation = data.compensation;
+        this.reason = data.reason;
+    }
+}
+
 export class Supported {
+    compensation?: string;
     supported: boolean;
     reason?: string;
-    compensation?: string;
 
     constructor(data: Supported) {
+        this.compensation = data.compensation;
         this.supported = data.supported;
         this.reason = data.reason;
-        this.compensation = data.compensation;
     }
 }
 
 export class GithubIdentity {
+    avatarUrl: string;
     name: string;
     type: GithubIdentityType;
-    avatarUrl: string;
 
     constructor(data: GithubIdentity) {
+        this.avatarUrl = data.avatarUrl;
         this.name = data.name;
         this.type = data.type;
-        this.avatarUrl = data.avatarUrl;
     }
 }
 
 export class GithubRepository {
-    fullName: string;
-    inUse: boolean;
     httpCloneUrl: string;
     sshCloneUrl: string;
     defaultBranch: string;
+    inUse: boolean;
+    fullName: string;
 
     constructor(data: GithubRepository) {
-        this.fullName = data.fullName;
-        this.inUse = data.inUse;
         this.httpCloneUrl = data.httpCloneUrl;
         this.sshCloneUrl = data.sshCloneUrl;
         this.defaultBranch = data.defaultBranch;
+        this.inUse = data.inUse;
+        this.fullName = data.fullName;
     }
 }
 
 export class BuildStepDescription {
-    name: string;
-    displayName: string;
-    description: string;
     runtimeName?: string;
     buildToolName?: string;
     exampleCommands: string[];
     exampleVariables: Record<string, Variable>;
+    description: string;
+    name: string;
+    displayName: string;
 
     constructor(data: BuildStepDescription) {
-        this.name = data.name;
-        this.displayName = data.displayName;
-        this.description = data.description;
         this.runtimeName = data.runtimeName;
         this.buildToolName = data.buildToolName;
         this.exampleCommands = data.exampleCommands;
         this.exampleVariables = data.exampleVariables;
+        this.description = data.description;
+        this.name = data.name;
+        this.displayName = data.displayName;
     }
 }
 
 export class TemplateFileCompletionDescription {
+    supportedInputs: string[];
+    description: string;
     type: string;
     displayName: string;
-    description: string;
-    supportedInputs: string[];
 
     constructor(data: TemplateFileCompletionDescription) {
+        this.supportedInputs = data.supportedInputs;
+        this.description = data.description;
         this.type = data.type;
         this.displayName = data.displayName;
-        this.description = data.description;
-        this.supportedInputs = data.supportedInputs;
     }
 }
 
 export class BuildStepInput {
-    name: string;
     commands: string[];
     variables: Record<string, VariableInput>;
     runtimeVersion?: string;
     buildToolVersion?: string;
+    name: string;
 
     constructor(data: BuildStepInput) {
-        this.name = data.name;
         this.commands = data.commands;
         this.variables = data.variables;
         this.runtimeVersion = data.runtimeVersion;
         this.buildToolVersion = data.buildToolVersion;
+        this.name = data.name;
     }
 }
 
-export class TemplateStepInput {
-    templateFiles: TemplateFileInput[];
+export class RuntimeStepInput {
+    domainRootPath: string;
+    templateFiles: FileInput[];
     secrets: Record<string, string>;
 
-    constructor(data: TemplateStepInput) {
+    constructor(data: RuntimeStepInput) {
+        this.domainRootPath = data.domainRootPath;
         this.templateFiles = data.templateFiles;
         this.secrets = data.secrets;
     }
@@ -1201,24 +1231,26 @@ export class DeployStepInput {
 }
 
 export class DestinationRepositoryInput {
-    repository: RepositoryInputUnion;
     privateRepo?: boolean;
+    repository: RepositoryInputUnion;
 
     constructor(data: DestinationRepositoryInput) {
-        this.repository = data.repository;
         this.privateRepo = data.privateRepo;
+        this.repository = data.repository;
     }
 }
 
 export class GitRepository {
-    fullName: string;
     httpCloneUrl: string;
     sshCloneUrl: string;
+    ownershipMissing: boolean;
+    fullName: string;
 
     constructor(data: GitRepository) {
-        this.fullName = data.fullName;
         this.httpCloneUrl = data.httpCloneUrl;
         this.sshCloneUrl = data.sshCloneUrl;
+        this.ownershipMissing = data.ownershipMissing;
+        this.fullName = data.fullName;
     }
 }
 
@@ -1233,48 +1265,38 @@ export class DatabaseSettings {
 }
 
 export class ProjectOverview {
+    productionBranchId: string;
+    productionDeploymentCount: number;
+    stagingDeploymentCount: number;
+    permissionLost: boolean;
+    gitRepository: GitRepository;
+    spawningEnabled: boolean;
+    lastChangedDate: Date;
+    siteUrls: string[];
+    deleted: boolean;
+    providerType: ProviderType;
+    projectType: string;
+    domains: string[];
     name: string;
     id: string;
     locked: boolean;
-    productionBranchId: string;
-    domains: string[];
-    projectType: string;
-    providerType: ProviderType;
-    lastChangedDate: Date;
-    deleted: boolean;
-    permissionLost: boolean;
-    gitRepository: GitRepository;
-    productionDeploymentCount: number;
-    stagingDeploymentCount: number;
-    spawningEnabled: boolean;
-    siteUrls: string[];
 
     constructor(data: ProjectOverview) {
+        this.productionBranchId = data.productionBranchId;
+        this.productionDeploymentCount = data.productionDeploymentCount;
+        this.stagingDeploymentCount = data.stagingDeploymentCount;
+        this.permissionLost = data.permissionLost;
+        this.gitRepository = data.gitRepository;
+        this.spawningEnabled = data.spawningEnabled;
+        this.lastChangedDate = data.lastChangedDate;
+        this.siteUrls = data.siteUrls;
+        this.deleted = data.deleted;
+        this.providerType = data.providerType;
+        this.projectType = data.projectType;
+        this.domains = data.domains;
         this.name = data.name;
         this.id = data.id;
         this.locked = data.locked;
-        this.productionBranchId = data.productionBranchId;
-        this.domains = data.domains;
-        this.projectType = data.projectType;
-        this.providerType = data.providerType;
-        this.lastChangedDate = data.lastChangedDate;
-        this.deleted = data.deleted;
-        this.permissionLost = data.permissionLost;
-        this.gitRepository = data.gitRepository;
-        this.productionDeploymentCount = data.productionDeploymentCount;
-        this.stagingDeploymentCount = data.stagingDeploymentCount;
-        this.spawningEnabled = data.spawningEnabled;
-        this.siteUrls = data.siteUrls;
-    }
-}
-
-export class ProjectNamePatch implements Patch<string> {
-    operation: string;
-    payload: string;
-
-    constructor(data: ProjectNamePatch) {
-        this.operation = data.operation;
-        this.payload = data.payload;
     }
 }
 
@@ -1288,11 +1310,21 @@ export class AutomaticDeploymentEnabledPatch implements Patch<boolean> {
     }
 }
 
-export class ProjectTypePatch implements Patch<string> {
+export class DefaultDomainRootPathPatch implements Patch<string> {
     operation: string;
     payload: string;
 
-    constructor(data: ProjectTypePatch) {
+    constructor(data: DefaultDomainRootPathPatch) {
+        this.operation = data.operation;
+        this.payload = data.payload;
+    }
+}
+
+export class VisitorStatisticsEnabledPatch implements Patch<boolean> {
+    operation: string;
+    payload: boolean;
+
+    constructor(data: VisitorStatisticsEnabledPatch) {
         this.operation = data.operation;
         this.payload = data.payload;
     }
@@ -1308,11 +1340,21 @@ export class DefaultPhpVersionPatch implements Patch<string> {
     }
 }
 
-export class VisitorStatisticsEnabledPatch implements Patch<boolean> {
+export class ProjectNamePatch implements Patch<string> {
     operation: string;
-    payload: boolean;
+    payload: string;
 
-    constructor(data: VisitorStatisticsEnabledPatch) {
+    constructor(data: ProjectNamePatch) {
+        this.operation = data.operation;
+        this.payload = data.payload;
+    }
+}
+
+export class ProjectTypePatch implements Patch<string> {
+    operation: string;
+    payload: string;
+
+    constructor(data: ProjectTypePatch) {
         this.operation = data.operation;
         this.payload = data.payload;
     }
@@ -1337,64 +1379,66 @@ export class GitHubConnection implements GitConnection {
 }
 
 export class BuildStepLog {
-    name: string;
     log: string;
+    name: string;
 
     constructor(data: BuildStepLog) {
-        this.name = data.name;
         this.log = data.log;
+        this.name = data.name;
     }
 }
 
 export class Webspace {
-    id: string;
-    username: string;
-    sshHost: string;
-    siteUrl: string;
-    phpVersion?: string;
+    domainRootPath?: string;
     quota?: WebspaceQuota;
+    siteUrl: string;
+    sshHost: string;
+    phpVersion?: string;
+    username: string;
+    id: string;
 
     constructor(data: Webspace) {
-        this.id = data.id;
-        this.username = data.username;
-        this.sshHost = data.sshHost;
-        this.siteUrl = data.siteUrl;
-        this.phpVersion = data.phpVersion;
+        this.domainRootPath = data.domainRootPath;
         this.quota = data.quota;
+        this.siteUrl = data.siteUrl;
+        this.sshHost = data.sshHost;
+        this.phpVersion = data.phpVersion;
+        this.username = data.username;
+        this.id = data.id;
     }
 }
 
 export class Database {
+    databaseQuota?: DatabaseQuota;
+    username: string;
     name?: string;
     id: string;
     type: string;
     host?: string;
     version: string;
-    username: string;
-    databaseQuota?: DatabaseQuota;
 
     constructor(data: Database) {
+        this.databaseQuota = data.databaseQuota;
+        this.username = data.username;
         this.name = data.name;
         this.id = data.id;
         this.type = data.type;
         this.host = data.host;
         this.version = data.version;
-        this.username = data.username;
-        this.databaseQuota = data.databaseQuota;
     }
 }
 
 export class WebspaceOverview {
-    id: string;
-    sshHost: string;
     siteUrl: string;
+    sshHost: string;
     phpVersion?: string;
+    id: string;
 
     constructor(data: WebspaceOverview) {
-        this.id = data.id;
-        this.sshHost = data.sshHost;
         this.siteUrl = data.siteUrl;
+        this.sshHost = data.sshHost;
         this.phpVersion = data.phpVersion;
+        this.id = data.id;
     }
 }
 
@@ -1416,33 +1460,35 @@ export class DatabaseOverview {
 
 export class GithubRepositoryInput implements RepositoryInput {
     type: "GITHUB";
-    owner: string;
-    branch?: string;
     repo: string;
+    branch?: string;
+    owner: string;
 
     constructor(data: GithubRepositoryInput) {
         this.type = data.type;
-        this.owner = data.owner;
-        this.branch = data.branch;
         this.repo = data.repo;
+        this.branch = data.branch;
+        this.owner = data.owner;
     }
 }
 
 export class DetectionBase {
-    type: DetectionBaseType;
     framework?: FrameworkIdentifier;
+    type: DetectionBaseType;
 
     constructor(data: DetectionBase) {
-        this.type = data.type;
         this.framework = data.framework;
+        this.type = data.type;
     }
 }
 
-export class TemplateStep {
+export class RuntimeStep {
+    domainRootPath: string;
     templateFiles: TemplateFile[];
     secrets: Record<string, string>;
 
-    constructor(data: TemplateStep) {
+    constructor(data: RuntimeStep) {
+        this.domainRootPath = data.domainRootPath;
         this.templateFiles = data.templateFiles;
         this.secrets = data.secrets;
     }
@@ -1459,6 +1505,26 @@ export class DeployStep {
         this.bootstrapConfig = data.bootstrapConfig;
         this.recurringConfig = data.recurringConfig;
         this.cronJobs = data.cronJobs;
+    }
+}
+
+export class Variable {
+    secret: boolean;
+    value: string;
+
+    constructor(data: Variable) {
+        this.secret = data.secret;
+        this.value = data.value;
+    }
+}
+
+export class DeploymentConfiguration {
+    remoteCommands: RemoteCommands;
+    excludes: string[];
+
+    constructor(data: DeploymentConfiguration) {
+        this.remoteCommands = data.remoteCommands;
+        this.excludes = data.excludes;
     }
 }
 
@@ -1506,59 +1572,39 @@ export class LanguageDetection implements Detection {
     }
 }
 
-export class Variable {
-    value: string;
-    secret: boolean;
-
-    constructor(data: Variable) {
-        this.value = data.value;
-        this.secret = data.secret;
-    }
-}
-
-export class DeploymentConfiguration {
-    excludes: string[];
-    remoteCommands: RemoteCommands;
-
-    constructor(data: DeploymentConfiguration) {
-        this.excludes = data.excludes;
-        this.remoteCommands = data.remoteCommands;
-    }
-}
-
 export class VariableInput {
-    value: string;
     secret: boolean;
+    value: string;
 
     constructor(data: VariableInput) {
-        this.value = data.value;
         this.secret = data.secret;
+        this.value = data.value;
     }
 }
 
-export class TemplateFileInput {
+export class FileInput {
     content: string;
     path: string;
 
-    constructor(data: TemplateFileInput) {
+    constructor(data: FileInput) {
         this.content = data.content;
         this.path = data.path;
     }
 }
 
 export class DeploymentConfigurationInput {
-    excludes: string[];
     remoteCommands: RemoteCommands;
+    excludes: string[];
 
     constructor(data: DeploymentConfigurationInput) {
-        this.excludes = data.excludes;
         this.remoteCommands = data.remoteCommands;
+        this.excludes = data.excludes;
     }
 }
 
 export interface Patch<T> {
-    payload: T;
     operation: string;
+    payload: T;
 }
 
 export class WebspaceQuota {
@@ -1610,22 +1656,9 @@ export interface HttpClient<O> {
     request<R>(requestConfig: { method: string; url: string; queryParams?: any; data?: any; copyFn?: (data: R) => R; options?: O; }): RestResponse<R>;
 }
 
-export interface FrameworkSearchRequestQueryParams {
-    type?: string;
-    supported?: boolean;
-}
-
 export interface PagingRequestQueryParams {
     pageNumber?: number;
     pageSize?: number;
-}
-
-export interface ProjectSearchRequestQueryParams {
-    numberOfBranches?: number;
-}
-
-export interface BranchSearchRequestQueryParams {
-    name?: string;
 }
 
 export interface AccountSearchRequestQueryParams {
@@ -1637,19 +1670,134 @@ export interface AccountSearchRequestQueryParams {
     includeLocked?: boolean;
     includeDeleted?: boolean;
     domain?: string;
+    githubConnected?: boolean;
+    membershipType?: MembershipType;
+    welcomeScreenAcknowledged?: boolean;
+    projectTypeGroup?: string;
 }
 
-export class IonosSpaceUserSessionApiClient<O> {
+export interface FrameworkSearchRequestQueryParams {
+    type?: string;
+    supported?: boolean;
+}
+
+export interface BranchSearchRequestQueryParams {
+    name?: string;
+}
+
+export interface ProjectSearchRequestQueryParams {
+    numberOfBranches?: number;
+}
+
+export class IonosSpaceGithubApiClient<O> {
 
     constructor(protected httpClient: HttpClient<O>) {
     }
 
     /**
-     * HTTP POST /v4/user-session
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceUserSessionApi.createUserSession
+     * HTTP POST /v4/accounts/{accountId}/github-installations
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceGithubApi.createInstallation
      */
-    createUserSession(options?: O): RestResponse<UserSession> {
-        return this.httpClient.request({ method: "POST", url: uriEncoding`v4/user-session`, options: options });
+    createInstallation(accountId: string, installation: InstallationInput, options?: O): RestResponse<Installation> {
+        return this.httpClient.request({ method: "POST", url: uriEncoding`v4/accounts/${accountId}/github-installations`, data: installation, options: options });
+    }
+
+    /**
+     * HTTP GET /v4/accounts/{accountId}/github-installations/{installationId}
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceGithubApi.getInstallation
+     */
+    getInstallation(accountId: string, installationId: string, options?: O): RestResponse<Installation> {
+        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/accounts/${accountId}/github-installations/${installationId}`, options: options });
+    }
+
+    /**
+     * HTTP GET /v4/accounts/{accountId}/github-installations/{installationId}/repositories
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceGithubApi.getRepositories
+     */
+    getRepositories(accountId: string, installationId: string, queryParams?: PagingRequestQueryParams, options?: O): RestResponse<Page<GithubRepository>> {
+        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/accounts/${accountId}/github-installations/${installationId}/repositories`, queryParams: queryParams, options: options });
+    }
+
+    /**
+     * HTTP HEAD /v4/accounts/{accountId}/github-installations/{installationId}/repositories/{owner}/{repo}
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceGithubApi.existsGithubRepository
+     */
+    existsGithubRepository(accountId: string, installationId: string, owner: string, repo: string, options?: O): RestResponse<void> {
+        return this.httpClient.request({ method: "HEAD", url: uriEncoding`v4/accounts/${accountId}/github-installations/${installationId}/repositories/${owner}/${repo}`, options: options });
+    }
+
+    /**
+     * HTTP GET /v4/accounts/{accountId}/github-installations/{installationId}/repositories/{owner}/{repo}/branches
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceGithubApi.getBranches
+     */
+    getBranches(accountId: string, installationId: string, owner: string, repo: string, queryParams?: PagingRequestQueryParams, options?: O): RestResponse<Page<string>> {
+        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/accounts/${accountId}/github-installations/${installationId}/repositories/${owner}/${repo}/branches`, queryParams: queryParams, options: options });
+    }
+
+    /**
+     * HTTP HEAD /v4/accounts/{accountId}/github-installations/{installationId}/repositories/{owner}/{repo}/branches/{branchName}/workflows
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceGithubApi.existsIonosSpaceWorkflow
+     */
+    existsIonosSpaceWorkflow(accountId: string, installationId: string, owner: string, repo: string, branchName: string, options?: O): RestResponse<void> {
+        return this.httpClient.request({ method: "HEAD", url: uriEncoding`v4/accounts/${accountId}/github-installations/${installationId}/repositories/${owner}/${repo}/branches/${branchName}/workflows`, options: options });
+    }
+}
+
+export class IonosSpaceArtifactApiClient<O> {
+
+    constructor(protected httpClient: HttpClient<O>) {
+    }
+
+    /**
+     * HTTP GET /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}/artifacts/{version}
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceArtifactApi.getArtifact
+     */
+    getArtifact(accountId: string, projectId: string, branchId: string, version: string, options?: O): RestResponse<ArtifactDownload> {
+        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}/artifacts/${version}`, options: options });
+    }
+
+    /**
+     * HTTP PUT /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}/artifacts/{version}/complete
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceArtifactApi.completeUpload
+     */
+    completeUpload(accountId: string, projectId: string, branchId: string, version: string, input: CompletedPart[], options?: O): RestResponse<void> {
+        return this.httpClient.request({ method: "PUT", url: uriEncoding`v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}/artifacts/${version}/complete`, data: input, options: options });
+    }
+
+    /**
+     * HTTP PUT /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}/artifacts/{version}/prepare
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceArtifactApi.prepareUpload
+     */
+    prepareUpload(accountId: string, projectId: string, branchId: string, version: string, input: ArtifactUploadInput, options?: O): RestResponse<ArtifactUpload> {
+        return this.httpClient.request({ method: "PUT", url: uriEncoding`v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}/artifacts/${version}/prepare`, data: input, options: options });
+    }
+}
+
+export class IonosSpaceGithubWebhookApiClient<O> {
+
+    constructor(protected httpClient: HttpClient<O>) {
+    }
+
+    /**
+     * HTTP POST /v4/github-hooks
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceGithubWebhookApi.onHook
+     */
+    onHook(payload: string, options?: O): RestResponse<void> {
+        return this.httpClient.request({ method: "POST", url: uriEncoding`v4/github-hooks`, data: payload, options: options });
+    }
+}
+
+export class IonosSpaceAccountInfoApiClient<O> {
+
+    constructor(protected httpClient: HttpClient<O>) {
+    }
+
+    /**
+     * HTTP GET /v4/account-info
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceAccountInfoApi.getAccountInfo
+     */
+    getAccountInfo(options?: O): RestResponse<AccountInfo> {
+        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/account-info`, options: options });
     }
 }
 
@@ -1683,17 +1831,95 @@ export class IonosSpaceTokensApiClient<O> {
     }
 }
 
-export class IonosSpaceAccountInfoApiClient<O> {
+export class IonosSpaceEventsApiClient<O> {
 
     constructor(protected httpClient: HttpClient<O>) {
     }
 
     /**
-     * HTTP GET /v4/account-info
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceAccountInfoApi.getAccountInfo
+     * HTTP GET /v4/accounts/{accountId}/events
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceEventsApi.receiveAndRegister
      */
-    getAccountInfo(options?: O): RestResponse<AccountInfo> {
-        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/account-info`, options: options });
+    receiveAndRegister(accountId: string, queryParams?: { lastEventId?: string; }, options?: O): RestResponse<void> {
+        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/accounts/${accountId}/events`, queryParams: queryParams, options: options });
+    }
+}
+
+export class IonosSpaceAccountApiClient<O> {
+
+    constructor(protected httpClient: HttpClient<O>) {
+    }
+
+    /**
+     * HTTP GET /v4/accounts
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceAccountApi.getAccounts
+     */
+    getAccounts(queryParams?: AccountSearchRequestQueryParams & PagingRequestQueryParams & { sort?: SortField[]; }, options?: O): RestResponse<Page<DetailedAccountOverview>> {
+        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/accounts`, queryParams: queryParams, options: options });
+    }
+
+    /**
+     * HTTP GET /v4/accounts/{accountId}
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceAccountApi.getAccount
+     */
+    getAccount(accountId: string, options?: O): RestResponse<DetailedAccount> {
+        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/accounts/${accountId}`, options: options });
+    }
+
+    /**
+     * HTTP PATCH /v4/accounts/{accountId}
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceAccountApi.patchAccount
+     */
+    patchAccount(accountId: string, accountPatch: AccountPatch, options?: O): RestResponse<Account> {
+        return this.httpClient.request({ method: "PATCH", url: uriEncoding`v4/accounts/${accountId}`, data: accountPatch, options: options });
+    }
+
+    /**
+     * HTTP POST /v4/accounts/{accountId}/disconnect-domains
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceAccountApi.disconnectDomains
+     */
+    disconnectDomains(accountId: string, input: DisconnectDomains, options?: O): RestResponse<void> {
+        return this.httpClient.request({ method: "POST", url: uriEncoding`v4/accounts/${accountId}/disconnect-domains`, data: input, options: options });
+    }
+
+    /**
+     * HTTP GET /v4/accounts/{accountId}/domains
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceAccountApi.getDomains
+     */
+    getDomains(accountId: string, queryParams?: { inUse?: boolean; }, options?: O): RestResponse<Domain[]> {
+        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/accounts/${accountId}/domains`, queryParams: queryParams, options: options });
+    }
+
+    /**
+     * HTTP POST /v4/accounts/{accountId}/feedbacks
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceAccountApi.createFeedback
+     */
+    createFeedback(accountId: string, feedback: FeedbackInput, options?: O): RestResponse<void> {
+        return this.httpClient.request({ method: "POST", url: uriEncoding`v4/accounts/${accountId}/feedbacks`, data: feedback, options: options });
+    }
+
+    /**
+     * HTTP PUT /v4/accounts/{accountId}/reset
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceAccountApi.resetAccount
+     */
+    resetAccount(accountId: string, options?: O): RestResponse<void> {
+        return this.httpClient.request({ method: "PUT", url: uriEncoding`v4/accounts/${accountId}/reset`, options: options });
+    }
+
+    /**
+     * HTTP GET /v4/accounts/{accountId}/upsell-information
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceAccountApi.getUpsellInformation
+     */
+    getUpsellInformation(accountId: string, options?: O): RestResponse<UpsellInformation> {
+        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/accounts/${accountId}/upsell-information`, options: options });
+    }
+
+    /**
+     * HTTP POST /v4/accounts/{accountId}/validate-project-name
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceAccountApi.validateProjectName
+     */
+    validateProjectName(accountId: string, projectNameValidationRequest: ProjectNameValidationRequest, options?: O): RestResponse<void> {
+        return this.httpClient.request({ method: "POST", url: uriEncoding`v4/accounts/${accountId}/validate-project-name`, data: projectNameValidationRequest, options: options });
     }
 }
 
@@ -1740,6 +1966,120 @@ export class IonosSpaceFrameworkApiClient<O> {
      */
     updateFramework(frameworkId: string, frameworkDefinition: FrameworkDefinitionInput, options?: O): RestResponse<FrameworkDefinition> {
         return this.httpClient.request({ method: "PUT", url: uriEncoding`v4/frameworks/${frameworkId}`, data: frameworkDefinition, options: options });
+    }
+}
+
+export class IonosSpaceBranchApiClient<O> {
+
+    constructor(protected httpClient: HttpClient<O>) {
+    }
+
+    /**
+     * HTTP GET /v4/accounts/{accountId}/projects/{projectId}/branches
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceBranchApi.getBranches
+     */
+    getBranches(accountId: string, projectId: string, queryParams?: PagingRequestQueryParams & BranchSearchRequestQueryParams, options?: O): RestResponse<Page<BranchOverview>> {
+        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/accounts/${accountId}/projects/${projectId}/branches`, queryParams: queryParams, options: options });
+    }
+
+    /**
+     * HTTP DELETE /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceBranchApi.deleteBranch
+     */
+    deleteBranch(accountId: string, projectId: string, branchId: string, branchDeleteOperation: BranchDeleteOperation, options?: O): RestResponse<void> {
+        return this.httpClient.request({ method: "DELETE", url: uriEncoding`v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}`, data: branchDeleteOperation, options: options });
+    }
+
+    /**
+     * HTTP GET /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceBranchApi.getBranch
+     */
+    getBranch(accountId: string, projectId: string, branchId: string, options?: O): RestResponse<Branch> {
+        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}`, options: options });
+    }
+
+    /**
+     * HTTP PATCH /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceBranchApi.patchBranch
+     */
+    patchBranch(accountId: string, projectId: string, branchId: string, branchPatch: BranchPatch, options?: O): RestResponse<Branch> {
+        return this.httpClient.request({ method: "PATCH", url: uriEncoding`v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}`, data: branchPatch, options: options });
+    }
+
+    /**
+     * HTTP GET /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}/builds
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceBranchApi.getBuilds
+     */
+    getBuilds(accountId: string, projectId: string, branchId: string, queryParams?: PagingRequestQueryParams, options?: O): RestResponse<Page<BranchBuild>> {
+        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}/builds`, queryParams: queryParams, options: options });
+    }
+
+    /**
+     * HTTP GET /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}/builds/{buildId}/logs
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceBranchApi.getBuildLogs
+     */
+    getBuildLogs(accountId: string, projectId: string, branchId: string, buildId: string, options?: O): RestResponse<BuildLog> {
+        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}/builds/${buildId}/logs`, options: options });
+    }
+
+    /**
+     * HTTP POST /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}/finish-deployments
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceBranchApi.finishDeployments
+     */
+    finishDeployments(accountId: string, projectId: string, branchId: string, options?: O): RestResponse<void> {
+        return this.httpClient.request({ method: "POST", url: uriEncoding`v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}/finish-deployments`, options: options });
+    }
+
+    /**
+     * HTTP POST /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}/trigger-deployments
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceBranchApi.triggerDeployments
+     */
+    triggerDeployments(accountId: string, projectId: string, branchId: string, input: DeploymentTriggerInput, options?: O): RestResponse<void> {
+        return this.httpClient.request({ method: "POST", url: uriEncoding`v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}/trigger-deployments`, data: input, options: options });
+    }
+}
+
+export class IonosSpaceUserSessionApiClient<O> {
+
+    constructor(protected httpClient: HttpClient<O>) {
+    }
+
+    /**
+     * HTTP POST /v4/user-session
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceUserSessionApi.createUserSession
+     */
+    createUserSession(options?: O): RestResponse<UserSession> {
+        return this.httpClient.request({ method: "POST", url: uriEncoding`v4/user-session`, options: options });
+    }
+}
+
+export class IonosSpaceDetectionApiClient<O> {
+
+    constructor(protected httpClient: HttpClient<O>) {
+    }
+
+    /**
+     * HTTP POST /v4/accounts/{accountId}/complete-build-step
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceDetectionApi.completeBuildStep
+     */
+    completeBuildStep(accountId: string, completionInput: BuildStepCompletionInput, options?: O): RestResponse<BuildStep> {
+        return this.httpClient.request({ method: "POST", url: uriEncoding`v4/accounts/${accountId}/complete-build-step`, data: completionInput, options: options });
+    }
+
+    /**
+     * HTTP POST /v4/accounts/{accountId}/complete-template-file
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceDetectionApi.completeTemplateFile
+     */
+    completeTemplateFile(accountId: string, completionInput: TemplateFileCompletionInput, options?: O): RestResponse<TemplateFile> {
+        return this.httpClient.request({ method: "POST", url: uriEncoding`v4/accounts/${accountId}/complete-template-file`, data: completionInput, options: options });
+    }
+
+    /**
+     * HTTP POST /v4/accounts/{accountId}/detect-steps
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceDetectionApi.detectWorkflow
+     */
+    detectWorkflow(accountId: string, detection: DetectionInput, options?: O): RestResponse<DetectionResult[]> {
+        return this.httpClient.request({ method: "POST", url: uriEncoding`v4/accounts/${accountId}/detect-steps`, data: detection, options: options });
     }
 }
 
@@ -1826,356 +2166,6 @@ export class IonosSpaceProjectApiClient<O> {
      */
     validateDeploymentName(accountId: string, projectId: string, deploymentNameValidationRequest: DeploymentNameValidationRequest, options?: O): RestResponse<void> {
         return this.httpClient.request({ method: "POST", url: uriEncoding`v4/accounts/${accountId}/projects/${projectId}/validate-deployment-name`, data: deploymentNameValidationRequest, options: options });
-    }
-}
-
-export class IonosSpaceEventsApiClient<O> {
-
-    constructor(protected httpClient: HttpClient<O>) {
-    }
-
-    /**
-     * HTTP GET /v4/accounts/{accountId}/events
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceEventsApi.receiveAndRegister
-     */
-    receiveAndRegister(accountId: string, queryParams?: { lastEventId?: string; }, options?: O): RestResponse<void> {
-        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/accounts/${accountId}/events`, queryParams: queryParams, options: options });
-    }
-}
-
-export class IonosSpaceBranchApiClient<O> {
-
-    constructor(protected httpClient: HttpClient<O>) {
-    }
-
-    /**
-     * HTTP GET /v4/accounts/{accountId}/projects/{projectId}/branches
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceBranchApi.getBranches
-     */
-    getBranches(accountId: string, projectId: string, queryParams?: PagingRequestQueryParams & BranchSearchRequestQueryParams, options?: O): RestResponse<Page<BranchOverview>> {
-        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/accounts/${accountId}/projects/${projectId}/branches`, queryParams: queryParams, options: options });
-    }
-
-    /**
-     * HTTP DELETE /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceBranchApi.deleteBranch
-     */
-    deleteBranch(accountId: string, projectId: string, branchId: string, branchDeleteOperation: BranchDeleteOperation, options?: O): RestResponse<void> {
-        return this.httpClient.request({ method: "DELETE", url: uriEncoding`v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}`, data: branchDeleteOperation, options: options });
-    }
-
-    /**
-     * HTTP GET /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceBranchApi.getBranch
-     */
-    getBranch(accountId: string, projectId: string, branchId: string, options?: O): RestResponse<Branch> {
-        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}`, options: options });
-    }
-
-    /**
-     * HTTP PATCH /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceBranchApi.patchBranch
-     */
-    patchBranch(accountId: string, projectId: string, branchId: string, branchPatch: BranchPatch, options?: O): RestResponse<Branch> {
-        return this.httpClient.request({ method: "PATCH", url: uriEncoding`v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}`, data: branchPatch, options: options });
-    }
-
-    /**
-     * HTTP GET /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}/builds
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceBranchApi.getBuilds
-     */
-    getBuilds(accountId: string, projectId: string, branchId: string, queryParams?: PagingRequestQueryParams, options?: O): RestResponse<Page<BranchBuild>> {
-        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}/builds`, queryParams: queryParams, options: options });
-    }
-
-    /**
-     * HTTP GET /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}/builds/{buildId}/logs
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceBranchApi.getBuildLogs
-     */
-    getBuildLogs(accountId: string, projectId: string, branchId: string, buildId: string, options?: O): RestResponse<BuildLog> {
-        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}/builds/${buildId}/logs`, options: options });
-    }
-
-    /**
-     * HTTP POST /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}/finish-deployments
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceBranchApi.finishDeployments
-     */
-    finishDeployments(accountId: string, projectId: string, branchId: string, options?: O): RestResponse<void> {
-        return this.httpClient.request({ method: "POST", url: uriEncoding`v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}/finish-deployments`, options: options });
-    }
-
-    /**
-     * HTTP POST /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}/trigger-deployments
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceBranchApi.triggerDeployments
-     */
-    triggerDeployments(accountId: string, projectId: string, branchId: string, input: DeploymentTriggerInput, options?: O): RestResponse<void> {
-        return this.httpClient.request({ method: "POST", url: uriEncoding`v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}/trigger-deployments`, data: input, options: options });
-    }
-}
-
-export class IonosSpaceDetectionApiClient<O> {
-
-    constructor(protected httpClient: HttpClient<O>) {
-    }
-
-    /**
-     * HTTP POST /v4/accounts/{accountId}/complete-build-step
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceDetectionApi.completeBuildStep
-     */
-    completeBuildStep(accountId: string, completionInput: BuildStepCompletionInput, options?: O): RestResponse<BuildStep> {
-        return this.httpClient.request({ method: "POST", url: uriEncoding`v4/accounts/${accountId}/complete-build-step`, data: completionInput, options: options });
-    }
-
-    /**
-     * HTTP POST /v4/accounts/{accountId}/complete-template-file
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceDetectionApi.completeTemplateFile
-     */
-    completeTemplateFile(accountId: string, completionInput: TemplateFileCompletionInput, options?: O): RestResponse<TemplateFile> {
-        return this.httpClient.request({ method: "POST", url: uriEncoding`v4/accounts/${accountId}/complete-template-file`, data: completionInput, options: options });
-    }
-
-    /**
-     * HTTP POST /v4/accounts/{accountId}/detect-steps
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceDetectionApi.detectWorkflow
-     */
-    detectWorkflow(accountId: string, detection: DetectionInput, options?: O): RestResponse<DetectionResult[]> {
-        return this.httpClient.request({ method: "POST", url: uriEncoding`v4/accounts/${accountId}/detect-steps`, data: detection, options: options });
-    }
-}
-
-export class IonosSpaceAccountApiClient<O> {
-
-    constructor(protected httpClient: HttpClient<O>) {
-    }
-
-    /**
-     * HTTP GET /v4/accounts
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceAccountApi.getAccounts
-     */
-    getAccounts(queryParams?: AccountSearchRequestQueryParams & PagingRequestQueryParams & { sort?: SortField[]; }, options?: O): RestResponse<Page<DetailedAccountOverview>> {
-        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/accounts`, queryParams: queryParams, options: options });
-    }
-
-    /**
-     * HTTP GET /v4/accounts/{accountId}
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceAccountApi.getAccount
-     */
-    getAccount(accountId: string, options?: O): RestResponse<DetailedAccount> {
-        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/accounts/${accountId}`, options: options });
-    }
-
-    /**
-     * HTTP PATCH /v4/accounts/{accountId}
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceAccountApi.patchAccount
-     */
-    patchAccount(accountId: string, accountPatch: AccountPatch, options?: O): RestResponse<Account> {
-        return this.httpClient.request({ method: "PATCH", url: uriEncoding`v4/accounts/${accountId}`, data: accountPatch, options: options });
-    }
-
-    /**
-     * HTTP POST /v4/accounts/{accountId}/disconnect-domains
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceAccountApi.disconnectDomains
-     */
-    disconnectDomains(accountId: string, input: DisconnectDomains, options?: O): RestResponse<void> {
-        return this.httpClient.request({ method: "POST", url: uriEncoding`v4/accounts/${accountId}/disconnect-domains`, data: input, options: options });
-    }
-
-    /**
-     * HTTP GET /v4/accounts/{accountId}/domains
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceAccountApi.getDomains
-     */
-    getDomains(accountId: string, queryParams?: { inUse?: boolean; }, options?: O): RestResponse<Domain[]> {
-        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/accounts/${accountId}/domains`, queryParams: queryParams, options: options });
-    }
-
-    /**
-     * HTTP POST /v4/accounts/{accountId}/feedbacks
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceAccountApi.createFeedback
-     */
-    createFeedback(accountId: string, feedback: FeedbackInput, options?: O): RestResponse<void> {
-        return this.httpClient.request({ method: "POST", url: uriEncoding`v4/accounts/${accountId}/feedbacks`, data: feedback, options: options });
-    }
-
-    /**
-     * HTTP PUT /v4/accounts/{accountId}/reset
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceAccountApi.resetAccount
-     */
-    resetAccount(accountId: string, options?: O): RestResponse<void> {
-        return this.httpClient.request({ method: "PUT", url: uriEncoding`v4/accounts/${accountId}/reset`, options: options });
-    }
-
-    /**
-     * HTTP GET /v4/accounts/{accountId}/upsell-information
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceAccountApi.getUpsellInformation
-     */
-    getUpsellInformation(accountId: string, options?: O): RestResponse<UpsellInformation> {
-        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/accounts/${accountId}/upsell-information`, options: options });
-    }
-
-    /**
-     * HTTP POST /v4/accounts/{accountId}/validate-project-name
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceAccountApi.validateProjectName
-     */
-    validateProjectName(accountId: string, projectNameValidationRequest: ProjectNameValidationRequest, options?: O): RestResponse<void> {
-        return this.httpClient.request({ method: "POST", url: uriEncoding`v4/accounts/${accountId}/validate-project-name`, data: projectNameValidationRequest, options: options });
-    }
-}
-
-export class IonosSpaceMetadataApiClient<O> {
-
-    constructor(protected httpClient: HttpClient<O>) {
-    }
-
-    /**
-     * HTTP GET /v4/metadata/build-step-descriptions
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceMetadataApi.getBuildStepDescriptions
-     */
-    getBuildStepDescriptions(options?: O): RestResponse<BuildStepDescription[]> {
-        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/metadata/build-step-descriptions`, options: options });
-    }
-
-    /**
-     * HTTP GET /v4/metadata/template-file-descriptions
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceMetadataApi.getTemplateFileCompletionDescriptions
-     */
-    getTemplateFileCompletionDescriptions(options?: O): RestResponse<TemplateFileCompletionDescription[]> {
-        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/metadata/template-file-descriptions`, options: options });
-    }
-
-    /**
-     * HTTP GET /v4/metadata/versions/{toolName}
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceMetadataApi.getAvailableVersions
-     */
-    getAvailableVersions(toolName: string, options?: O): RestResponse<string[]> {
-        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/metadata/versions/${toolName}`, options: options });
-    }
-}
-
-export class IonosSpaceGithubWebhookApiClient<O> {
-
-    constructor(protected httpClient: HttpClient<O>) {
-    }
-
-    /**
-     * HTTP POST /v4/github-hooks
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceGithubWebhookApi.onHook
-     */
-    onHook(payload: string, options?: O): RestResponse<void> {
-        return this.httpClient.request({ method: "POST", url: uriEncoding`v4/github-hooks`, data: payload, options: options });
-    }
-}
-
-export class IonosSpaceArtifactApiClient<O> {
-
-    constructor(protected httpClient: HttpClient<O>) {
-    }
-
-    /**
-     * HTTP GET /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}/artifacts/{version}
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceArtifactApi.getArtifact
-     */
-    getArtifact(accountId: string, projectId: string, branchId: string, version: string, options?: O): RestResponse<ArtifactDownload> {
-        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}/artifacts/${version}`, options: options });
-    }
-
-    /**
-     * HTTP PUT /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}/artifacts/{version}/complete
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceArtifactApi.completeUpload
-     */
-    completeUpload(accountId: string, projectId: string, branchId: string, version: string, input: CompletedPart[], options?: O): RestResponse<void> {
-        return this.httpClient.request({ method: "PUT", url: uriEncoding`v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}/artifacts/${version}/complete`, data: input, options: options });
-    }
-
-    /**
-     * HTTP PUT /v4/accounts/{accountId}/projects/{projectId}/branches/{branchId}/artifacts/{version}/prepare
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceArtifactApi.prepareUpload
-     */
-    prepareUpload(accountId: string, projectId: string, branchId: string, version: string, input: ArtifactUploadInput, options?: O): RestResponse<ArtifactUpload> {
-        return this.httpClient.request({ method: "PUT", url: uriEncoding`v4/accounts/${accountId}/projects/${projectId}/branches/${branchId}/artifacts/${version}/prepare`, data: input, options: options });
-    }
-}
-
-export class IonosSpaceProjectTypesApiClient<O> {
-
-    constructor(protected httpClient: HttpClient<O>) {
-    }
-
-    /**
-     * HTTP GET /v4/project-types
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceProjectTypesApi.getProjectTypes
-     */
-    getProjectTypes(queryParams?: PagingRequestQueryParams, options?: O): RestResponse<Page<ProjectType>> {
-        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/project-types`, queryParams: queryParams, options: options });
-    }
-
-    /**
-     * HTTP POST /v4/project-types
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceProjectTypesApi.save
-     */
-    save(projectType: ProjectTypeInput, options?: O): RestResponse<ProjectType> {
-        return this.httpClient.request({ method: "POST", url: uriEncoding`v4/project-types`, data: projectType, options: options });
-    }
-
-    /**
-     * HTTP GET /v4/project-types/{name}
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceProjectTypesApi.getProjectType
-     */
-    getProjectType(name: string, options?: O): RestResponse<ProjectType> {
-        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/project-types/${name}`, options: options });
-    }
-}
-
-export class IonosSpaceGithubApiClient<O> {
-
-    constructor(protected httpClient: HttpClient<O>) {
-    }
-
-    /**
-     * HTTP POST /v4/accounts/{accountId}/github-installations
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceGithubApi.createInstallation
-     */
-    createInstallation(accountId: string, installation: InstallationInput, options?: O): RestResponse<Installation> {
-        return this.httpClient.request({ method: "POST", url: uriEncoding`v4/accounts/${accountId}/github-installations`, data: installation, options: options });
-    }
-
-    /**
-     * HTTP GET /v4/accounts/{accountId}/github-installations/{installationId}
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceGithubApi.getInstallation
-     */
-    getInstallation(accountId: string, installationId: string, options?: O): RestResponse<Installation> {
-        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/accounts/${accountId}/github-installations/${installationId}`, options: options });
-    }
-
-    /**
-     * HTTP GET /v4/accounts/{accountId}/github-installations/{installationId}/repositories
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceGithubApi.getRepositories
-     */
-    getRepositories(accountId: string, installationId: string, queryParams?: PagingRequestQueryParams, options?: O): RestResponse<Page<GithubRepository>> {
-        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/accounts/${accountId}/github-installations/${installationId}/repositories`, queryParams: queryParams, options: options });
-    }
-
-    /**
-     * HTTP HEAD /v4/accounts/{accountId}/github-installations/{installationId}/repositories/{owner}/{repo}
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceGithubApi.existsGithubRepository
-     */
-    existsGithubRepository(accountId: string, installationId: string, owner: string, repo: string, options?: O): RestResponse<void> {
-        return this.httpClient.request({ method: "HEAD", url: uriEncoding`v4/accounts/${accountId}/github-installations/${installationId}/repositories/${owner}/${repo}`, options: options });
-    }
-
-    /**
-     * HTTP GET /v4/accounts/{accountId}/github-installations/{installationId}/repositories/{owner}/{repo}/branches
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceGithubApi.getBranches
-     */
-    getBranches(accountId: string, installationId: string, owner: string, repo: string, queryParams?: PagingRequestQueryParams, options?: O): RestResponse<Page<string>> {
-        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/accounts/${accountId}/github-installations/${installationId}/repositories/${owner}/${repo}/branches`, queryParams: queryParams, options: options });
-    }
-
-    /**
-     * HTTP HEAD /v4/accounts/{accountId}/github-installations/{installationId}/repositories/{owner}/{repo}/branches/{branchName}/workflows
-     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceGithubApi.existsIonosSpaceWorkflow
-     */
-    existsIonosSpaceWorkflow(accountId: string, installationId: string, owner: string, repo: string, branchName: string, options?: O): RestResponse<void> {
-        return this.httpClient.request({ method: "HEAD", url: uriEncoding`v4/accounts/${accountId}/github-installations/${installationId}/repositories/${owner}/${repo}/branches/${branchName}/workflows`, options: options });
     }
 }
 
@@ -2273,6 +2263,66 @@ export class IonosSpaceDeploymentApiClient<O> {
     }
 }
 
+export class IonosSpaceProjectTypesApiClient<O> {
+
+    constructor(protected httpClient: HttpClient<O>) {
+    }
+
+    /**
+     * HTTP GET /v4/project-types
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceProjectTypesApi.getProjectTypes
+     */
+    getProjectTypes(queryParams?: PagingRequestQueryParams, options?: O): RestResponse<Page<ProjectType>> {
+        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/project-types`, queryParams: queryParams, options: options });
+    }
+
+    /**
+     * HTTP POST /v4/project-types
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceProjectTypesApi.save
+     */
+    save(projectType: ProjectTypeInput, options?: O): RestResponse<ProjectType> {
+        return this.httpClient.request({ method: "POST", url: uriEncoding`v4/project-types`, data: projectType, options: options });
+    }
+
+    /**
+     * HTTP GET /v4/project-types/{name}
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceProjectTypesApi.getProjectType
+     */
+    getProjectType(name: string, options?: O): RestResponse<ProjectType> {
+        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/project-types/${name}`, options: options });
+    }
+}
+
+export class IonosSpaceMetadataApiClient<O> {
+
+    constructor(protected httpClient: HttpClient<O>) {
+    }
+
+    /**
+     * HTTP GET /v4/metadata/build-step-descriptions
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceMetadataApi.getBuildStepDescriptions
+     */
+    getBuildStepDescriptions(options?: O): RestResponse<BuildStepDescription[]> {
+        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/metadata/build-step-descriptions`, options: options });
+    }
+
+    /**
+     * HTTP GET /v4/metadata/template-file-descriptions
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceMetadataApi.getTemplateFileCompletionDescriptions
+     */
+    getTemplateFileCompletionDescriptions(options?: O): RestResponse<TemplateFileCompletionDescription[]> {
+        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/metadata/template-file-descriptions`, options: options });
+    }
+
+    /**
+     * HTTP GET /v4/metadata/versions/{toolName}
+     * Java method: com.ionos.beat.ionos.space.api.v4.IonosSpaceMetadataApi.getAvailableVersions
+     */
+    getAvailableVersions(toolName: string, options?: O): RestResponse<string[]> {
+        return this.httpClient.request({ method: "GET", url: uriEncoding`v4/metadata/versions/${toolName}`, options: options });
+    }
+}
+
 export type RestResponse<R> = Promise<Axios.GenericAxiosResponse<R>>;
 
 export type GitConnectionUnion = GitHubConnection;
@@ -2280,6 +2330,11 @@ export type GitConnectionUnion = GitHubConnection;
 export type RepositoryInputUnion = GithubRepositoryInput;
 
 export type DetectionUnion = DependencyDetection | FileContentDetection | FileDetection | LanguageDetection;
+
+export enum MembershipType {
+    FREE = "FREE",
+    PAID = "PAID",
+}
 
 export enum BranchChangeType {
     CREATE = "CREATE",
@@ -2319,12 +2374,12 @@ export enum ProjectChangeType {
     NAME = "NAME",
 }
 
-export enum TokenChangeType {
-    REVOKE = "REVOKE",
-}
-
 export enum ProviderType {
     GITHUB = "GITHUB",
+}
+
+export enum TokenChangeType {
+    REVOKE = "REVOKE",
 }
 
 export enum DeploymentChangeType {
@@ -2338,17 +2393,17 @@ export enum DeploymentChangeType {
     NAME = "NAME",
 }
 
+export enum Feature {
+    PHP = "PHP",
+    MAIL = "MAIL",
+    DB = "DB",
+}
+
 export enum FrameworkType {
     SSR = "SSR",
     SSG = "SSG",
     SPA = "SPA",
     PLAIN = "PLAIN",
-}
-
-export enum Feature {
-    PHP = "PHP",
-    MAIL = "MAIL",
-    DB = "DB",
 }
 
 export enum AppAccessType {
@@ -2377,15 +2432,6 @@ export enum BranchDeploymentStateType {
     PARTLY_FAILED = "PARTLY_FAILED",
 }
 
-export enum DeploymentState {
-    IN_CREATION = "IN_CREATION",
-    CREATED = "CREATED",
-    QUEUED = "QUEUED",
-    RUNNING = "RUNNING",
-    SUCCESS = "SUCCESS",
-    FAILED = "FAILED",
-}
-
 export enum WebspaceState {
     IN_CREATION = "IN_CREATION",
     CREATED = "CREATED",
@@ -2396,6 +2442,15 @@ export enum DatabaseState {
     IN_CREATION = "IN_CREATION",
     CREATED = "CREATED",
     DELETED = "DELETED",
+}
+
+export enum DeploymentState {
+    IN_CREATION = "IN_CREATION",
+    CREATED = "CREATED",
+    QUEUED = "QUEUED",
+    RUNNING = "RUNNING",
+    SUCCESS = "SUCCESS",
+    FAILED = "FAILED",
 }
 
 export enum Type {
@@ -2473,87 +2528,7 @@ class AxiosHttpClient implements HttpClient<Axios.AxiosRequestConfig> {
     }
 }
 
-export class AxiosIonosSpaceUserSessionApiClient extends IonosSpaceUserSessionApiClient<Axios.AxiosRequestConfig> {
-
-    constructor(baseURL: string, axiosInstance: Axios.AxiosInstance = axios.create()) {
-        axiosInstance.defaults.baseURL = baseURL;
-        super(new AxiosHttpClient(axiosInstance));
-    }
-}
-
-export class AxiosIonosSpaceTokensApiClient extends IonosSpaceTokensApiClient<Axios.AxiosRequestConfig> {
-
-    constructor(baseURL: string, axiosInstance: Axios.AxiosInstance = axios.create()) {
-        axiosInstance.defaults.baseURL = baseURL;
-        super(new AxiosHttpClient(axiosInstance));
-    }
-}
-
-export class AxiosIonosSpaceAccountInfoApiClient extends IonosSpaceAccountInfoApiClient<Axios.AxiosRequestConfig> {
-
-    constructor(baseURL: string, axiosInstance: Axios.AxiosInstance = axios.create()) {
-        axiosInstance.defaults.baseURL = baseURL;
-        super(new AxiosHttpClient(axiosInstance));
-    }
-}
-
-export class AxiosIonosSpaceFrameworkApiClient extends IonosSpaceFrameworkApiClient<Axios.AxiosRequestConfig> {
-
-    constructor(baseURL: string, axiosInstance: Axios.AxiosInstance = axios.create()) {
-        axiosInstance.defaults.baseURL = baseURL;
-        super(new AxiosHttpClient(axiosInstance));
-    }
-}
-
-export class AxiosIonosSpaceProjectApiClient extends IonosSpaceProjectApiClient<Axios.AxiosRequestConfig> {
-
-    constructor(baseURL: string, axiosInstance: Axios.AxiosInstance = axios.create()) {
-        axiosInstance.defaults.baseURL = baseURL;
-        super(new AxiosHttpClient(axiosInstance));
-    }
-}
-
-export class AxiosIonosSpaceEventsApiClient extends IonosSpaceEventsApiClient<Axios.AxiosRequestConfig> {
-
-    constructor(baseURL: string, axiosInstance: Axios.AxiosInstance = axios.create()) {
-        axiosInstance.defaults.baseURL = baseURL;
-        super(new AxiosHttpClient(axiosInstance));
-    }
-}
-
-export class AxiosIonosSpaceBranchApiClient extends IonosSpaceBranchApiClient<Axios.AxiosRequestConfig> {
-
-    constructor(baseURL: string, axiosInstance: Axios.AxiosInstance = axios.create()) {
-        axiosInstance.defaults.baseURL = baseURL;
-        super(new AxiosHttpClient(axiosInstance));
-    }
-}
-
-export class AxiosIonosSpaceDetectionApiClient extends IonosSpaceDetectionApiClient<Axios.AxiosRequestConfig> {
-
-    constructor(baseURL: string, axiosInstance: Axios.AxiosInstance = axios.create()) {
-        axiosInstance.defaults.baseURL = baseURL;
-        super(new AxiosHttpClient(axiosInstance));
-    }
-}
-
-export class AxiosIonosSpaceAccountApiClient extends IonosSpaceAccountApiClient<Axios.AxiosRequestConfig> {
-
-    constructor(baseURL: string, axiosInstance: Axios.AxiosInstance = axios.create()) {
-        axiosInstance.defaults.baseURL = baseURL;
-        super(new AxiosHttpClient(axiosInstance));
-    }
-}
-
-export class AxiosIonosSpaceMetadataApiClient extends IonosSpaceMetadataApiClient<Axios.AxiosRequestConfig> {
-
-    constructor(baseURL: string, axiosInstance: Axios.AxiosInstance = axios.create()) {
-        axiosInstance.defaults.baseURL = baseURL;
-        super(new AxiosHttpClient(axiosInstance));
-    }
-}
-
-export class AxiosIonosSpaceGithubWebhookApiClient extends IonosSpaceGithubWebhookApiClient<Axios.AxiosRequestConfig> {
+export class AxiosIonosSpaceGithubApiClient extends IonosSpaceGithubApiClient<Axios.AxiosRequestConfig> {
 
     constructor(baseURL: string, axiosInstance: Axios.AxiosInstance = axios.create()) {
         axiosInstance.defaults.baseURL = baseURL;
@@ -2569,7 +2544,7 @@ export class AxiosIonosSpaceArtifactApiClient extends IonosSpaceArtifactApiClien
     }
 }
 
-export class AxiosIonosSpaceProjectTypesApiClient extends IonosSpaceProjectTypesApiClient<Axios.AxiosRequestConfig> {
+export class AxiosIonosSpaceGithubWebhookApiClient extends IonosSpaceGithubWebhookApiClient<Axios.AxiosRequestConfig> {
 
     constructor(baseURL: string, axiosInstance: Axios.AxiosInstance = axios.create()) {
         axiosInstance.defaults.baseURL = baseURL;
@@ -2577,7 +2552,71 @@ export class AxiosIonosSpaceProjectTypesApiClient extends IonosSpaceProjectTypes
     }
 }
 
-export class AxiosIonosSpaceGithubApiClient extends IonosSpaceGithubApiClient<Axios.AxiosRequestConfig> {
+export class AxiosIonosSpaceAccountInfoApiClient extends IonosSpaceAccountInfoApiClient<Axios.AxiosRequestConfig> {
+
+    constructor(baseURL: string, axiosInstance: Axios.AxiosInstance = axios.create()) {
+        axiosInstance.defaults.baseURL = baseURL;
+        super(new AxiosHttpClient(axiosInstance));
+    }
+}
+
+export class AxiosIonosSpaceTokensApiClient extends IonosSpaceTokensApiClient<Axios.AxiosRequestConfig> {
+
+    constructor(baseURL: string, axiosInstance: Axios.AxiosInstance = axios.create()) {
+        axiosInstance.defaults.baseURL = baseURL;
+        super(new AxiosHttpClient(axiosInstance));
+    }
+}
+
+export class AxiosIonosSpaceEventsApiClient extends IonosSpaceEventsApiClient<Axios.AxiosRequestConfig> {
+
+    constructor(baseURL: string, axiosInstance: Axios.AxiosInstance = axios.create()) {
+        axiosInstance.defaults.baseURL = baseURL;
+        super(new AxiosHttpClient(axiosInstance));
+    }
+}
+
+export class AxiosIonosSpaceAccountApiClient extends IonosSpaceAccountApiClient<Axios.AxiosRequestConfig> {
+
+    constructor(baseURL: string, axiosInstance: Axios.AxiosInstance = axios.create()) {
+        axiosInstance.defaults.baseURL = baseURL;
+        super(new AxiosHttpClient(axiosInstance));
+    }
+}
+
+export class AxiosIonosSpaceFrameworkApiClient extends IonosSpaceFrameworkApiClient<Axios.AxiosRequestConfig> {
+
+    constructor(baseURL: string, axiosInstance: Axios.AxiosInstance = axios.create()) {
+        axiosInstance.defaults.baseURL = baseURL;
+        super(new AxiosHttpClient(axiosInstance));
+    }
+}
+
+export class AxiosIonosSpaceBranchApiClient extends IonosSpaceBranchApiClient<Axios.AxiosRequestConfig> {
+
+    constructor(baseURL: string, axiosInstance: Axios.AxiosInstance = axios.create()) {
+        axiosInstance.defaults.baseURL = baseURL;
+        super(new AxiosHttpClient(axiosInstance));
+    }
+}
+
+export class AxiosIonosSpaceUserSessionApiClient extends IonosSpaceUserSessionApiClient<Axios.AxiosRequestConfig> {
+
+    constructor(baseURL: string, axiosInstance: Axios.AxiosInstance = axios.create()) {
+        axiosInstance.defaults.baseURL = baseURL;
+        super(new AxiosHttpClient(axiosInstance));
+    }
+}
+
+export class AxiosIonosSpaceDetectionApiClient extends IonosSpaceDetectionApiClient<Axios.AxiosRequestConfig> {
+
+    constructor(baseURL: string, axiosInstance: Axios.AxiosInstance = axios.create()) {
+        axiosInstance.defaults.baseURL = baseURL;
+        super(new AxiosHttpClient(axiosInstance));
+    }
+}
+
+export class AxiosIonosSpaceProjectApiClient extends IonosSpaceProjectApiClient<Axios.AxiosRequestConfig> {
 
     constructor(baseURL: string, axiosInstance: Axios.AxiosInstance = axios.create()) {
         axiosInstance.defaults.baseURL = baseURL;
@@ -2586,6 +2625,22 @@ export class AxiosIonosSpaceGithubApiClient extends IonosSpaceGithubApiClient<Ax
 }
 
 export class AxiosIonosSpaceDeploymentApiClient extends IonosSpaceDeploymentApiClient<Axios.AxiosRequestConfig> {
+
+    constructor(baseURL: string, axiosInstance: Axios.AxiosInstance = axios.create()) {
+        axiosInstance.defaults.baseURL = baseURL;
+        super(new AxiosHttpClient(axiosInstance));
+    }
+}
+
+export class AxiosIonosSpaceProjectTypesApiClient extends IonosSpaceProjectTypesApiClient<Axios.AxiosRequestConfig> {
+
+    constructor(baseURL: string, axiosInstance: Axios.AxiosInstance = axios.create()) {
+        axiosInstance.defaults.baseURL = baseURL;
+        super(new AxiosHttpClient(axiosInstance));
+    }
+}
+
+export class AxiosIonosSpaceMetadataApiClient extends IonosSpaceMetadataApiClient<Axios.AxiosRequestConfig> {
 
     constructor(baseURL: string, axiosInstance: Axios.AxiosInstance = axios.create()) {
         axiosInstance.defaults.baseURL = baseURL;

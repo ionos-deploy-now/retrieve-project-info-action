@@ -11,5 +11,5 @@ Action.run<Configuration, ProjectInfo | DisabledProject>(
       apiKey: input.required('api-key'),
       projectId: input.required('project'),
       branchName: context.required('ref').replace(/refs\/heads\//g, ''),
-    }
+    },
 );

@@ -1,7 +1,10 @@
 export default class Retryable<T> {
   private readonly maxRetries: number;
 
-  constructor(private action: (retry: () => Promise<T>, lastRetry: boolean) => Promise<T>, options: { count: number }) {
+  constructor(
+    private action: (retry: () => Promise<T>, lastRetry: boolean) => Promise<T>,
+    options: { count: number },
+  ) {
     this.maxRetries = options.count;
   }
 
