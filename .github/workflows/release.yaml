@@ -36,14 +36,14 @@ jobs:
         run: |
           npm version ${{ inputs.version }} --no-commit-hooks --no-git-tag-version
           npm run release
-      - uses: stefanzweifel/git-auto-commit-action@v4
+      - uses: stefanzweifel/git-auto-commit-action@v5
         id: commit-step
         with:
           commit_message: Release version v${{ inputs.version }}
           tagging_message: v${{ inputs.version }}
       - if: inputs.update-major-tag
         name: Update major version tag
-        uses: actions/github-script@v3
+        uses: actions/github-script@v7
         env:
           VERSION: ${{ inputs.version }}
           SHA: ${{ steps.commit-step.outputs.commit_hash }}
