@@ -56,7 +56,7 @@ jobs:
               return
             }
             try {
-                await github.git.deleteRef({
+                await github.rest.git.deleteRef({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   ref: "tags/" + tag
@@ -64,7 +64,7 @@ jobs:
             } catch (e) {
               console.log("The tag " + tag + " doesn't exist yet.")
             }
-            await github.git.createRef({
+            await github.rest.git.createRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: "refs/tags/" + tag,
