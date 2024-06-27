@@ -1,6 +1,6 @@
 {
   "name": "retrieve-project-info-action",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "scripts": {
     "lint": "eslint src --max-warnings=0 --ext .ts",
     "lint-fix": "eslint src --max-warnings=0 --ext .ts --fix",
